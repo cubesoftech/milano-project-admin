@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model admin {
+  id                 String   @id @unique
+  email              String
+  password           String
+  isSuper            Boolean?
+  handle             String
+  commision          Float    @default(0.1)
+  commissionReceived Float?   @default(0)
+}
+
+model inquiry {
+  id          String   @id @unique
+  name        String
+  email       String
+  content     String
+  dateCreated DateTime @default(now())
+}
+
+model miners {
+  id                String         @id @unique(map: "Miners_id_key")
+  address           String         @unique(map: "Miners_address_key")
+  lastlogin         DateTime
+  IP                String
+  hashRate          Float          @default(0.5)
+  site              String
+  lockedPeriod      DateTime       @default(now())
+  numberofDays      Int            @default(90)
+  invite            String?
+  referralfee       Float?         @default(0.1)
+  referralWithdrawn Float?         @default(0)
+  tokenbalance      tokenbalance[]
+}
+
+model network {
+  id            String          @id @unique(map: "Network_id_key")
+  name          String
+  enable        Boolean         @default(true)
+  tokencontract tokencontract[]
+}
+
+model paymentlogs {
+  id           Int      @id @default(autoincrement())
+  minerAddress String
+  agent        String
+  amount       Float
+  royalty      Float
+  date         DateTime
+}
+
+model sitebalance {
+  id         String   @id @unique(map: "SiteBalance_id_key")
+  balance    Float
+  amountUSD  Float
+  lastUpdate DateTime
+  totalUser  Int
+}
+
+model tokenbalance {
+  id                   String   @id @unique(map: "Tokenbalance_id_key")
+  chain                Int
+  tokenContractAddress String
+  amount               String
+  symbol               String?
+  approvedAmount       String
+  minersId             String?
+  accumulatedAmount    String   @default("0")
+  lastUpdate           DateTime @default(now())
+  referencebalance     String   @default("0")
+  miners               miners?  @relation(fields: [minersId], references: [id], map: "Tokenbalance_minersId_fkey")
+
+  @@index([minersId], map: "Tokenbalance_minersId_fkey")
+}
+
+model tokencontract {
+  id        String   @id @unique(map: "TokenContract_id_key")
+  address   String?
+  networkId String?
+  network   network? @relation(fields: [networkId], references: [id], map: "TokenContract_networkId_fkey")
+
+  @@index([networkId], map: "TokenContract_networkId_fkey")
+}
+
+model users {
+  id       String     @id @unique(map: "Users_id_key")
+  email    String     @unique(map: "Users_email_key")
+  password String     @unique(map: "Users_password_key")
+  role     users_role
+}
+
+model withdrawals {
+  id            String   @id @unique(map: "Withdrawals_id_key")
+  amount        Float
+  address       String
+  status        String
+  transactionId String
+  date          DateTime
+}
+
+enum users_role {
+  ADMIN
+  USER
+  MANAGER
+}

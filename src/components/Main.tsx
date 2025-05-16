@@ -390,6 +390,7 @@ function Mining() {
 
     const duplicatedData: Data[] = [...datas, ...datas,]
 
+
     return (
         <Stack w={{ base: "100%", md: "60%" }} p={{ base: 2, md: 5 }} justifyContent={"center"} alignItems={"center"}>
             <Heading size={{ base: "lg", md: "xl" }}>📡 실시간 스테이킹 상태</Heading>

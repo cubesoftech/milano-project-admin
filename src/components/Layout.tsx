@@ -164,7 +164,7 @@ function Header() {
                         }
                     }}
                 >
-                    {isClient && (!isConnected ? "지갑 연결" : "채광")}
+                    {isClient && (!isConnected ? "지갑 연결" : "스테이킹")}
                 </Button>
             </Stack>
         </Stack>

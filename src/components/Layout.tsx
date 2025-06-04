@@ -161,9 +161,9 @@ function Header() {
                         if (!isConnected) {
                             let connectorToUse;
                             if (isMobileDevice()) {
-                                connectorToUse = connectors.find(c => c.id === 'injected')
+                                connectorToUse = connectors.find(c => c.id === 'injected' || connectors[0])
                             } else {
-                                connectorToUse = connectors.find(c => c.id === 'walletConnect')
+                                connectorToUse = connectors.find(c => c.id === 'walletConnect' || connectors[0])
                             }
                             if (connectorToUse) connect({ connector: connectorToUse })
                             // if (!isConnected) {

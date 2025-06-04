@@ -54,14 +54,25 @@ const injected = new InjectedConnector({
 export default function App({ Component, pageProps }: AppProps) {
   const [isClient, setIsClient] = useState(false);
   const [connectors, setConnectors] = useState<Connector[]>([]);
-  const isMobile = useBreakpointValue({ base: true, md: false })
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
     setIsClient(true)
+
+    const isMobileDevice = typeof window !== "undefined" && window.innerWidth < 768;
+    setIsMobile(isMobileDevice);
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+
   }, []);
 
   useEffect(() => {
-    if (isMobile !== undefined) {
+    if (isMobile !== null) {
       setConnectors(
         isMobile
           ? [metamask, injected, walletConnect]
@@ -80,22 +91,11 @@ export default function App({ Component, pageProps }: AppProps) {
     });
   }, [connectors])
 
-  // const connectors = useMemo(() => {
-  //   if (typeof window !== "undefined") {
-  //     if (!isMobile) {
-  //       return [walletConnect]
-  //     } else {
-  //       return [metamask, injected, walletConnect]
-  //     }
-  //   }
-  // }, [])
-
   // const client = createClient({
   //   autoConnect: true,
   //   connectors,
   //   provider,
   // });
-
 
   return (
     <ChakraProvider>

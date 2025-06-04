@@ -75,7 +75,7 @@ export default function App({ Component, pageProps }: AppProps) {
     if (isMobile !== null) {
       setConnectors(
         isMobile
-          ? [metamask, injected, walletConnect]
+          ? [injected, metamask, walletConnect]
           : [walletConnect]
       )
     }

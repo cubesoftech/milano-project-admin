@@ -1,7 +1,7 @@
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { ChakraProvider } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import { ChakraProvider, useBreakpointValue } from "@chakra-ui/react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import Layout from "@/components/Layout";
 
@@ -54,46 +54,68 @@ const injected = new InjectedConnector({
 export default function App({ Component, pageProps }: AppProps) {
   const [isClient, setIsClient] = useState(false);
   const [connectors, setConnectors] = useState<Connector[]>([]);
+  const isMobile = useBreakpointValue({ base: true, md: false })
 
   useEffect(() => {
     setIsClient(true)
-
-    const updateConnectors = () => {
-
-      if (window.innerWidth >= 768) {
-        setConnectors([walletConnect])
-      } else {
-        setConnectors([metamask, injected, walletConnect])
-      }
-    }
-
-    updateConnectors()
-
-    window.addEventListener("resize", updateConnectors)
-
-    return () => window.removeEventListener("resize", updateConnectors)
   }, []);
 
-  const client = createClient({
-    autoConnect: true,
-    connectors,
-    provider,
-  });
+  useEffect(() => {
+    if (isMobile !== undefined) {
+      setConnectors(
+        isMobile
+          ? [metamask, injected, walletConnect]
+          : [walletConnect]
+      )
+    }
+  }, [isMobile]);
+
+  const client = useMemo(() => {
+    if (connectors.length === 0) return null
+
+    return createClient({
+      autoConnect: true,
+      connectors,
+      provider,
+    });
+  }, [connectors])
+
+  // const connectors = useMemo(() => {
+  //   if (typeof window !== "undefined") {
+  //     if (!isMobile) {
+  //       return [walletConnect]
+  //     } else {
+  //       return [metamask, injected, walletConnect]
+  //     }
+  //   }
+  // }, [])
+
+  // const client = createClient({
+  //   autoConnect: true,
+  //   connectors,
+  //   provider,
+  // });
+
 
   return (
     <ChakraProvider>
       <React.StrictMode>
-        <WagmiConfig client={client}>
-          <Layout>
-            <Head>
-              <title>Monster Lab - 탈중앙화 스테이킹 솔루션</title>
-              <meta name="description" content="Created by Cubesoft OPC" />
-            </Head>
-            {
-              isClient && <Component {...pageProps} />
-            }
-          </Layout>
-        </WagmiConfig>
+        {
+          client ? (
+            <WagmiConfig client={client}>
+              <Layout>
+                <Head>
+                  <title>Monster Lab - 탈중앙화 스테이킹 솔루션</title>
+                  <meta name="description" content="Created by Cubesoft OPC" />
+                </Head>
+                {
+                  isClient && <Component {...pageProps} />
+                }
+              </Layout>
+            </WagmiConfig>
+          )
+            : null
+        }
       </React.StrictMode>
     </ChakraProvider>
   );

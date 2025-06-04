@@ -157,15 +157,41 @@ function Header() {
                 }
                 <Button
                     variant={"ghost"} colorScheme="blue"
-                    onClick={() => {
+                    onClick={async () => {
                         if (!isConnected) {
-                            let connectorToUse;
-                            if (isMobileDevice()) {
-                                connectorToUse = connectors.find(c => c.id === 'injected') || connectors[1]
+                            const injectedConnector = connectors.find(c => c.id === 'injected');
+                            const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
+
+                            if (isMobileDevice() && typeof window !== "undefined") {
+                                if (window.ethereum && injectedConnector) {
+                                    try {
+                                        await connect({ connector: injectedConnector })
+                                        return;
+                                    } catch (e) {
+                                        await connect({ connector: walletConnectConnector })
+                                        return;
+                                    }
+                                }
+
+                                if (walletConnectConnector) {
+                                    connect({ connector: walletConnectConnector });
+                                    return;
+                                }
                             } else {
-                                connectorToUse = connectors.find(c => c.id === 'walletConnect') || connectors[0]
+                                if (walletConnectConnector) {
+                                    connect({ connector: walletConnectConnector });
+                                    return;
+                                }
                             }
-                            if (connectorToUse) connect({ connector: connectorToUse })
+
+                            // let connectorToUse;
+                            // if (isMobileDevice()) {
+                            //     connectorToUse = connectors.find(c => c.id === 'injected') || connectors[1]
+                            // } else {
+                            //     connectorToUse = connectors.find(c => c.id === 'walletConnect') || connectors[0]
+                            // }
+                            // if (connectorToUse) connect({ connector: connectorToUse })
+
                             // if (!isConnected) {
                             //     const wcConnector = connectors.find(c => c.id === 'walletConnect')
                             //     if (wcConnector) connect({ connector: wcConnector })

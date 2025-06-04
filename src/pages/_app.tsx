@@ -24,7 +24,7 @@ const metamask = new MetaMaskConnector({
 });
 
 const walletConnect = new WalletConnectConnector({
-  chains,
+  // chains,
   options: {
     projectId: '206f5f67af1ce530c19b23328dd325d9',
     showQrModal: true,
@@ -53,7 +53,7 @@ const injected = new InjectedConnector({
 
 export default function App({ Component, pageProps }: AppProps) {
   const [isClient, setIsClient] = useState(false);
-  const [connectors, setConnectors] = useState<Connector[]>([]);
+  const [connectors, setConnectors] = useState<Connector[]>([injected]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export default function App({ Component, pageProps }: AppProps) {
       setConnectors(
         isMobile
           ? [injected, metamask, walletConnect]
-          : [walletConnect]
+          : [walletConnect, metamask, injected]
       )
     }
   }, [isMobile]);

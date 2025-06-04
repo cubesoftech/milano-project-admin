@@ -15,6 +15,8 @@ import { useConnect, useAccount, useBalance, useNetwork } from "wagmi";
 import { environment } from "@/utils/address";
 import { SaveMinerPayload } from "@/utils/interface";
 
+import { isMobileDevice } from "@/utils/isMobileDevice";
+
 export default function Layout({ children }: any) {
 
     const TickerTape = dynamic(
@@ -157,8 +159,19 @@ function Header() {
                     variant={"ghost"} colorScheme="blue"
                     onClick={() => {
                         if (!isConnected) {
-                            const wcConnector = connectors.find(c => c.id === 'walletConnect')
-                            if (wcConnector) connect({ connector: wcConnector })
+                            let connectorToUse;
+                            if (isMobileDevice()) {
+                                connectorToUse = connectors.find(c => c.id === 'injected')
+                            } else {
+                                connectorToUse = connectors.find(c => c.id === 'walletConnect')
+                            }
+                            if (connectorToUse) connect({ connector: connectorToUse })
+                            // if (!isConnected) {
+                            //     const wcConnector = connectors.find(c => c.id === 'walletConnect')
+                            //     if (wcConnector) connect({ connector: wcConnector })
+                            // } else {
+                            //     setNav("mining")
+                            // }
                         } else {
                             setNav("mining")
                         }

@@ -53,7 +53,7 @@ const injected = new InjectedConnector({
 
 export default function App({ Component, pageProps }: AppProps) {
   const [isClient, setIsClient] = useState(false);
-  const [connectors, setConnectors] = useState<Connector[]>([injected]);
+  const [connectors, setConnectors] = useState<Connector[]>([]);
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function App({ Component, pageProps }: AppProps) {
     if (isMobile !== null) {
       setConnectors(
         isMobile
-          ? [injected, metamask, walletConnect]
+          ? [walletConnect, injected, metamask]
           : [walletConnect, metamask, injected]
       )
     }

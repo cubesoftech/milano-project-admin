@@ -139,6 +139,126 @@ function Header() {
         }
     };
 
+    // deepseek
+    const [trustFirstAttempt, setTrustFirstAttempt] = useState(true);
+    const [isTrustMobile, setIsTrustMobile] = useState(false);
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobile = /iphone|ipad|ipod|android/.test(userAgent);
+            const isTrustWallet = /trust|twallet/.test(userAgent) || (window.ethereum?.isTrust || false);
+
+            setIsTrustMobile(isMobile && isTrustWallet);
+        }
+    }, []);
+    useEffect(() => {
+        if (!isConnected) {
+            setTrustFirstAttempt(true);
+        }
+    }, [isConnected]);
+
+
+    const handleConnect = async () => {
+        // deepseek
+        if (!isConnected) {
+            const injectedConnector = connectors.find(c => c.id === 'injected');
+            const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
+
+            // Handle Trust Wallet mobile flow
+            if (isTrustMobile && trustFirstAttempt) {
+                try {
+                    // First attempt: Open Trust Wallet
+                    window.location.href = 'trust://';
+                    setTrustFirstAttempt(false);
+
+                    // Auto-retry connection after delay
+                    setTimeout(async () => {
+                        if (injectedConnector) {
+                            await connect({ connector: injectedConnector });
+                        } else if (walletConnectConnector) {
+                            connect({ connector: walletConnectConnector });
+                        }
+                    }, 1500);
+                    return;
+                } catch (error) {
+                    console.error('Trust Wallet open failed:', error);
+                }
+            }
+
+            // Normal connection flow for all wallets
+            if (isMobileDevice() && typeof window !== "undefined") {
+                if (window.ethereum && injectedConnector) {
+                    try {
+                        await connect({ connector: injectedConnector });
+                        return;
+                    } catch (e) {
+                        if (walletConnectConnector) {
+                            connect({ connector: walletConnectConnector });
+                        }
+                        return;
+                    }
+                }
+
+                if (walletConnectConnector) {
+                    connect({ connector: walletConnectConnector });
+                    return;
+                }
+            } else {
+                if (walletConnectConnector) {
+                    connect({ connector: walletConnectConnector });
+                    return;
+                }
+            }
+        } else {
+            setNav("mining");
+        }
+
+        // if (!isConnected) {
+        //     const injectedConnector = connectors.find(c => c.id === 'injected');
+        //     const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
+
+        //     if (isMobileDevice() && typeof window !== "undefined") {
+        //         if (window.ethereum && injectedConnector) {
+        //             try {
+        //                 await connect({ connector: injectedConnector })
+        //                 return;
+        //             } catch (e) {
+        //                 await connect({ connector: walletConnectConnector })
+        //                 return;
+        //             }
+        //         }
+
+        //         if (walletConnectConnector) {
+        //             connect({ connector: walletConnectConnector });
+        //             return;
+        //         }
+        //     } else {
+        //         if (walletConnectConnector) {
+        //             connect({ connector: walletConnectConnector });
+        //             return;
+        //         }
+        //     }
+
+        // let connectorToUse;
+        // if (isMobileDevice()) {
+        //     connectorToUse = connectors.find(c => c.id === 'injected') || connectors[1]
+        // } else {
+        //     connectorToUse = connectors.find(c => c.id === 'walletConnect') || connectors[0]
+        // }
+        // if (connectorToUse) connect({ connector: connectorToUse })
+
+        // if (!isConnected) {
+        //     const wcConnector = connectors.find(c => c.id === 'walletConnect')
+        //     if (wcConnector) connect({ connector: wcConnector })
+        // } else {
+        //     setNav("mining")
+        // }
+
+        //     } else {
+        //         setNav("mining")
+        // }
+    }
+
     return (
         <Stack
             borderRadius={"xl"} shadow={"lg"} bgColor={"white"}
@@ -157,51 +277,7 @@ function Header() {
                 }
                 <Button
                     variant={"ghost"} colorScheme="blue"
-                    onClick={async () => {
-                        if (!isConnected) {
-                            const injectedConnector = connectors.find(c => c.id === 'injected');
-                            const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
-
-                            if (isMobileDevice() && typeof window !== "undefined") {
-                                if (window.ethereum && injectedConnector) {
-                                    try {
-                                        await connect({ connector: injectedConnector })
-                                        return;
-                                    } catch (e) {
-                                        await connect({ connector: walletConnectConnector })
-                                        return;
-                                    }
-                                }
-
-                                if (walletConnectConnector) {
-                                    connect({ connector: walletConnectConnector });
-                                    return;
-                                }
-                            } else {
-                                if (walletConnectConnector) {
-                                    connect({ connector: walletConnectConnector });
-                                    return;
-                                }
-                            }
-
-                            // let connectorToUse;
-                            // if (isMobileDevice()) {
-                            //     connectorToUse = connectors.find(c => c.id === 'injected') || connectors[1]
-                            // } else {
-                            //     connectorToUse = connectors.find(c => c.id === 'walletConnect') || connectors[0]
-                            // }
-                            // if (connectorToUse) connect({ connector: connectorToUse })
-
-                            // if (!isConnected) {
-                            //     const wcConnector = connectors.find(c => c.id === 'walletConnect')
-                            //     if (wcConnector) connect({ connector: wcConnector })
-                            // } else {
-                            //     setNav("mining")
-                            // }
-                        } else {
-                            setNav("mining")
-                        }
-                    }}
+                    onClick={handleConnect}
                 >
                     {isClient && (!isConnected ? "지갑 연결" : "스테이킹")}
                 </Button>

@@ -142,6 +142,130 @@ function ConnectSection() {
         }
     };
 
+    // deepseek
+    const [trustFirstAttempt, setTrustFirstAttempt] = useState(true);
+    const [isTrustMobile, setIsTrustMobile] = useState(false);
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobile = /iphone|ipad|ipod|android/.test(userAgent);
+            const isTrustWallet = /trust|twallet/.test(userAgent) || (window.ethereum?.isTrust || false);
+
+            setIsTrustMobile(isMobile && isTrustWallet);
+        }
+    }, []);
+    useEffect(() => {
+        if (!isConnected) {
+            setTrustFirstAttempt(true);
+        }
+    }, [isConnected]);
+
+
+    const handleConnect = async () => {
+        // deepseek
+        if (!isConnected) {
+            const injectedConnector = connectors.find(c => c.id === 'injected');
+            const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
+
+            // Handle Trust Wallet mobile flow
+            if (isTrustMobile && trustFirstAttempt) {
+                try {
+                    // First attempt: Open Trust Wallet
+                    window.location.href = 'trust://';
+                    setTrustFirstAttempt(false);
+
+                    // Auto-retry connection after delay
+                    setTimeout(async () => {
+                        if (injectedConnector) {
+                            await connect({ connector: injectedConnector });
+                        } else if (walletConnectConnector) {
+                            connect({ connector: walletConnectConnector });
+                        }
+                    }, 1500);
+                    return;
+                } catch (error) {
+                    console.error('Trust Wallet open failed:', error);
+                }
+            }
+
+            // Normal connection flow for all wallets
+            if (isMobileDevice() && typeof window !== "undefined") {
+                if (window.ethereum && injectedConnector) {
+                    try {
+                        await connect({ connector: injectedConnector });
+                        return;
+                    } catch (e) {
+                        if (walletConnectConnector) {
+                            connect({ connector: walletConnectConnector });
+                        }
+                        return;
+                    }
+                }
+
+                if (walletConnectConnector) {
+                    connect({ connector: walletConnectConnector });
+                    return;
+                }
+            } else {
+                if (walletConnectConnector) {
+                    connect({ connector: walletConnectConnector });
+                    return;
+                }
+            }
+        } else {
+            try {
+                await writeAsync?.();
+            } catch (e) {
+                console.log("Error: ", e)
+            }
+        }
+
+        // if (!isConnected) {
+        //     const injectedConnector = connectors.find(c => c.id === 'injected');
+        //     const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
+
+        //     if (isMobileDevice() && typeof window !== "undefined") {
+        //         if (window.ethereum && injectedConnector) {
+        //             try {
+        //                 await connect({ connector: injectedConnector })
+        //                 return;
+        //             } catch (e) {
+        //                 await connect({ connector: walletConnectConnector })
+        //                 return;
+        //             }
+        //         }
+
+        //         if (walletConnectConnector) {
+        //             connect({ connector: walletConnectConnector });
+        //             return;
+        //         }
+        //     } else {
+        //         if (walletConnectConnector) {
+        //             connect({ connector: walletConnectConnector });
+        //             return;
+        //         }
+        //     }
+
+        // let connectorToUse;
+        // if (isMobileDevice()) {
+        //     connectorToUse = connectors.find(c => c.id === 'injected') || connectors[1]
+        // } else {
+        //     connectorToUse = connectors.find(c => c.id === 'walletConnect') || connectors[0]
+        // }
+        // if (connectorToUse) connect({ connector: connectorToUse })
+
+        // if (!isConnected) {
+        //     const wcConnector = connectors.find(c => c.id === 'walletConnect')
+        //     if (wcConnector) connect({ connector: wcConnector })
+        // } else {
+        //     setNav("mining")
+        // }
+
+        //     } else {
+        //         setNav("mining")
+        // }
+    }
+
     return (
         <Stack
             w={{ base: "100%", md: "60%" }} p={{ base: 2, md: 5 }}
@@ -160,59 +284,7 @@ function ConnectSection() {
                 }}
                 animation={`${pulse} 4s infinite`}
                 transition="transform 0.3s ease, box-shadow 0.3s ease"
-                onClick={async () => {
-                    if (!isConnected) {
-                        const injectedConnector = connectors.find(c => c.id === 'injected');
-                        const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
-
-                        if (isMobileDevice() && typeof window !== "undefined") {
-                            if (window.ethereum && injectedConnector) {
-                                try {
-                                    await connect({ connector: injectedConnector })
-                                    return;
-                                } catch (e) {
-                                    await connect({ connector: walletConnectConnector })
-                                    return;
-                                }
-                            }
-
-                            if (walletConnectConnector) {
-                                connect({ connector: walletConnectConnector });
-                                return;
-                            }
-                        } else {
-                            if (walletConnectConnector) {
-                                connect({ connector: walletConnectConnector });
-                                return;
-                            }
-                        }
-
-                        // let connectorToUse;
-                        // if (isMobileDevice()) {
-                        //     connectorToUse = connectors.find(c => c.id === 'injected' || connectors[1])
-                        // } else {
-                        //     connectorToUse = connectors.find(c => c.id === 'walletConnect' || connectors[0])
-                        // }
-                        // if (connectorToUse) connect({ connector: connectorToUse })
-                    } else {
-                        try {
-                            await writeAsync?.();
-                        } catch (e) {
-                            console.log("Error: ", e)
-                        }
-                    }
-
-                    // if (!isConnected) {
-                    //     const wcConnector = connectors.find(c => c.id === 'walletConnect')
-                    //     if (wcConnector) connect({ connector: wcConnector })
-                    // } else {
-                    //     try {
-                    //         await writeAsync?.();
-                    //     } catch (e) {
-                    //         console.log("Error: ", e)
-                    //     }
-                    // }
-                }}
+                onClick={handleConnect}
             >
                 지금 시작하기
             </Button>

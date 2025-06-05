@@ -171,19 +171,20 @@ function ConnectSection() {
                                     await connect({ connector: injectedConnector })
                                     return;
                                 } catch (e) {
-                                    if (walletConnectConnector) {
-                                        connect({ connector: walletConnectConnector });
-                                        return;
-                                    }
+                                    await connect({ connector: walletConnectConnector })
+                                    return;
                                 }
-                            } else {
-                                window.location.href = `https://link.trustwallet.com/open_url?coin_id=60&url=${encodeURIComponent(window.location.href)}`;
+                            }
+
+                            if (walletConnectConnector) {
+                                connect({ connector: walletConnectConnector });
                                 return;
                             }
-                        }
-                        if (walletConnectConnector) {
-                            await connect({ connector: walletConnectConnector });
-                            return;
+                        } else {
+                            if (walletConnectConnector) {
+                                connect({ connector: walletConnectConnector });
+                                return;
+                            }
                         }
 
                         // let connectorToUse;

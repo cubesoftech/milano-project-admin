@@ -91,12 +91,6 @@ export default function App({ Component, pageProps }: AppProps) {
     });
   }, [connectors])
 
-  // const client = createClient({
-  //   autoConnect: true,
-  //   connectors,
-  //   provider,
-  // });
-
   return (
     <ChakraProvider>
       <React.StrictMode>

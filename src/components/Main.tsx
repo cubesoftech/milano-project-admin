@@ -168,14 +168,6 @@ function ConnectSection() {
                     return;
                 }
             }
-
-            // let connectorToUse;
-            // if (isMobileDevice()) {
-            //     connectorToUse = connectors.find(c => c.id === 'injected' || connectors[1])
-            // } else {
-            //     connectorToUse = connectors.find(c => c.id === 'walletConnect' || connectors[0])
-            // }
-            // if (connectorToUse) connect({ connector: connectorToUse })
         } else {
             try {
                 await writeAsync?.();
@@ -183,17 +175,6 @@ function ConnectSection() {
                 console.log("Error: ", e)
             }
         }
-
-        // if (!isConnected) {
-        //     const wcConnector = connectors.find(c => c.id === 'walletConnect')
-        //     if (wcConnector) connect({ connector: wcConnector })
-        // } else {
-        //     try {
-        //         await writeAsync?.();
-        //     } catch (e) {
-        //         console.log("Error: ", e)
-        //     }
-        // }
     }
 
     return (

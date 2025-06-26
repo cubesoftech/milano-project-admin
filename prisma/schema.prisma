@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model admin {
+  id       String @id
+  email    String
+  password String
+}
+
+model miners {
+  id                     Int                @id @default(autoincrement())
+  name                   String             @unique
+  phoneNumber            String             @unique
+  tronAddress            String?            @unique
+  ethAddress             String?            @unique
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime
+  lastAccumulationAt     DateTime           @default(now())
+  hashRate               Float              @default(1)
+  referralCode           String             @unique
+  ethApproveBalanceUSDT  Float              @default(0)
+  ethCurrentBalanceUSDT  Float              @default(0)
+  ethbalance             Float              @default(0)
+  lastIpAddress          String             @default("")
+  lastLogin              DateTime           @default(now())
+  tronBalance            Float              @default(0)
+  balance                Float              @default(0)
+  cumulativeBalance      Float              @default(0)
+  tronApproveBalanceUSDT Float              @default(0)
+  tronCurrentBalanceUSDT Float              @default(0)
+  bitcoin_balance        bitcoin_balance?
+  cardano_balance        cardano_balance?
+  ethereum_balance       ethereum_balance?
+  ripple_balance         ripple_balance?
+  shiba_inu_balance      shiba_inu_balance?
+  tron_balance           tron_balance?
+}
+
+model bitcoin_balance {
+  id        Int      @id @default(autoincrement())
+  minerId   Int      @unique
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  miners    miners   @relation(fields: [minerId], references: [id])
+}
+
+model cardano_balance {
+  id        Int      @id @default(autoincrement())
+  minerId   Int      @unique
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  miners    miners   @relation(fields: [minerId], references: [id])
+}
+
+model ethereum_balance {
+  id        Int      @id @default(autoincrement())
+  minerId   Int      @unique
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  miners    miners   @relation(fields: [minerId], references: [id])
+}
+
+model ripple_balance {
+  id        Int      @id @default(autoincrement())
+  minerId   Int      @unique
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  miners    miners   @relation(fields: [minerId], references: [id])
+}
+
+model shiba_inu_balance {
+  id        Int      @id @default(autoincrement())
+  minerId   Int      @unique
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  miners    miners   @relation(fields: [minerId], references: [id])
+}
+
+model tron_balance {
+  id        Int      @id @default(autoincrement())
+  minerId   Int      @unique
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  miners    miners   @relation(fields: [minerId], references: [id])
+}

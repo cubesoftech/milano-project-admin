@@ -3,41 +3,20 @@ import { Stack, Text, Button, Heading, Icon } from "@chakra-ui/react";
 import Toast from "../toast";
 import { FaCopy } from "react-icons/fa";
 
-import { useAccount } from "wagmi";
-
 interface Data {
     rewards: number,
     totalInvites: number;
 }
 
 export default function Team() {
-    const { address } = useAccount();
     const [data, setData] = useState<Data | null>(null);
 
-    useEffect(() => {
-        if (!address) return;
-        fetchReferrals();
-    }, [address]);
 
-
-    const fetchReferrals = async () => {
-        fetch("/api/referrals", {
-            method: "POST",
-            body: JSON.stringify({ address }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then((res) => res.json())
-            .then((res) => {
-                setData(res);
-            });
-    };
     return (
         <Stack w={"100%"} justifyContent={"flex-start"} alignItems={"center"} gap={10}>
             <Stack w={"100%"} p={{ base: 2, md: 5 }} direction={{ base: "column", md: "row" }} justifyContent={"center"} alignItems={"center"} gap={5}>
-                <Reward data={data} address={address} />
-                <Invite address={address} />
+                {/* <Reward data={data} address={address} />
+                <Invite address={address} /> */}
             </Stack>
         </Stack>
     );

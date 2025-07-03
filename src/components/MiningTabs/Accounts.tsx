@@ -6,7 +6,6 @@ import Toast from "../toast";
 
 import { useAccountStore } from "@/utils/storage";
 import { AccountData } from "@/utils/storage";
-import { useAccount, useContractRead, erc20ABI } from "wagmi";
 import { environment } from "@/utils/address";
 import { withdrawals } from "@prisma/client";
 
@@ -14,66 +13,17 @@ import tether from "@/assets/tether.png"
 
 export default function Account() {
     const { setAccountData, accountData } = useAccountStore();
-    const { address } = useAccount();
-    const { data: symbol } = useContractRead({
-        address: environment.token_address,
-        abi: erc20ABI,
-        functionName: "symbol",
-    });
-
     const [approveBalance, setApproveBalance] = useState(0);
     const [hash, setHash] = useState(0);
     const [accumulatedIncome, setAccumulatedIncome] = useState(0);
     const [withdrawals, setWithdrawals] = useState<withdrawals[]>([]);
 
-    const getAccountData = async () => {
-        fetch("/api/getAccountData", {
-            method: "POST",
-            body: JSON.stringify({ address, symbol }),
-        })
-            .then(async (res) => {
-                const data = await res.json();
-                console.log(data, "data");
-                setApproveBalance(parseFloat(data.balance));
-                setAccumulatedIncome(parseFloat(data.accumulated));
-                setHash(parseFloat(data.hash));
-                setAccountData({ lockDate: data.lock });
-            })
-            .catch((err) => {
-                console.log(err, "err");
-                setAccumulatedIncome(0);
-                setApproveBalance(0);
-                setHash(0);
-            });
-    };
-
-    useEffect(() => {
-        setInterval(() => {
-            getAccountData();
-        }, 1000 * 10);
-    }, []);
-    useEffect(() => {
-        const getWithdrawals = async () => {
-            fetch("/api/getWithdrawals", {
-                method: "POST",
-                body: JSON.stringify({ address }),
-            })
-                .then(async (res) => {
-                    const data = await res.json();
-                    setWithdrawals(data.withdrawals);
-                })
-                .catch((err) => {
-                    console.log(err, "err");
-                });
-        };
-        getWithdrawals();
-    }, []);
 
     return (
         <Stack w={"100%"} justifyContent={"flex-start"} alignItems={"center"} gap={{ base: 5, md: 10 }}>
-            <Address address={address} hash={hash} />
+            {/* <Address address={address} hash={hash} />
             <Income address={address} accumulatedIncome={accumulatedIncome} approveBalance={approveBalance} />
-            <Withdraw accountData={accountData} address={address} symbol={symbol} withdrawals={withdrawals} />
+            <Withdraw accountData={accountData} address={address} symbol={symbol} withdrawals={withdrawals} /> */}
         </Stack>
     );
 }

@@ -6,7 +6,6 @@ import Image from "next/image";
 
 import { walletsEth } from "@/utils/address";
 
-import { useAccount } from "wagmi";
 import { useNav } from "@/utils/storage";
 
 import binance from "@/assets/authority/binance.png"
@@ -23,12 +22,7 @@ import { StaticImageData } from "next/image";
 
 export default function MiningPool() {
 
-    const { isConnected } = useAccount()
     const { setNav } = useNav()
-
-    if (!isConnected) {
-        setNav("home")
-    }
 
     return (
         <Stack w={"100%"} justifyContent={"flex-start"} alignItems={"center"} gap={{ base: 5, md: 10 }}>

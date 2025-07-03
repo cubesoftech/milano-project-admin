@@ -1,102 +1,47 @@
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { ChakraProvider, useBreakpointValue } from "@chakra-ui/react";
-import React, { useEffect, useMemo, useState } from "react";
+import { ChakraProvider } from "@chakra-ui/react";
+import React, { useMemo, useState } from "react";
 
 import Layout from "@/components/Layout";
 
-import { WagmiConfig, createClient, configureChains, sepolia, mainnet, Connector } from "wagmi";
-import { publicProvider } from "wagmi/providers/public";
-import { MetaMaskConnector } from "wagmi/connectors/metaMask";
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
-import { InjectedConnector } from "wagmi/connectors/injected";
-
-const chain = mainnet;
-
-export const { chains, provider } = configureChains(
-  [chain],
-  [publicProvider()]
-);
-
-const metamask = new MetaMaskConnector({
-  chains,
-  options: {},
-});
-
-const walletConnect = new WalletConnectConnector({
-  // chains,
-  options: {
-    projectId: '206f5f67af1ce530c19b23328dd325d9',
-    showQrModal: true,
-    qrModalOptions: {
-      enableExplorer: true,
-      explorerAllowList: [],
-      explorerDenyList: [],
-      explorerRecommendedWalletIds: [
-        'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
-        '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust
-      ]
-    },
-  }
-})
-
-const injected = new InjectedConnector({
-  chains,
-  options: {
-    name: (detectedName) =>
-      `Injected (${typeof detectedName === 'string'
-        ? detectedName
-        : detectedName.join(', ')})`,
-    shimDisconnect: true,
-  },
-});
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { WalletModalProvider, } from "@solana/wallet-adapter-react-ui";
+import { clusterApiUrl } from "@solana/web3.js";
+import { PhantomWalletAdapter, SolflareWalletAdapter, WalletConnectWalletAdapter } from '@solana/wallet-adapter-wallets'
+import "@solana/wallet-adapter-react-ui/styles.css";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [isClient, setIsClient] = useState(false);
-  const [connectors, setConnectors] = useState<Connector[]>([]);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [isClient, setIsClient] = useState(true);
 
-  useEffect(() => {
-    setIsClient(true)
+  const network = WalletAdapterNetwork.Mainnet;
 
-    const isMobileDevice = typeof window !== "undefined" && window.innerWidth < 768;
-    setIsMobile(isMobileDevice);
+  // You can also provide a custom RPC endpoint
+  const endpoint = useMemo(() => 'https://rough-ancient-fire.solana-mainnet.quiknode.pro/09b86a076f1f99d5169fc64fa235d840ff3ec031', [network]);
 
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+  const wallets = [
+    new PhantomWalletAdapter(),
+    new SolflareWalletAdapter({ network }),
+    new WalletConnectWalletAdapter({
+      options: {
+        projectId: "206f5f67af1ce530c19b23328dd325d9", // Replace with your WalletConnect project ID
+        relayUrl: 'wss://relay.walletconnect.org', // Optional, defaults to WalletConnect relay
+      },
+      network: network,
+    }),
+  ];
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-
-  }, []);
-
-  useEffect(() => {
-    if (isMobile !== null) {
-      setConnectors(
-        isMobile
-          ? [walletConnect, injected, metamask]
-          : [walletConnect, metamask, injected]
-      )
-    }
-  }, [isMobile]);
-
-  const client = useMemo(() => {
-    if (connectors.length === 0) return null
-
-    return createClient({
-      autoConnect: true,
-      connectors,
-      provider,
-    });
-  }, [connectors])
 
   return (
     <ChakraProvider>
       <React.StrictMode>
-        {
-          client ? (
-            <WagmiConfig client={client}>
+        <ConnectionProvider endpoint={endpoint}>
+          <WalletProvider wallets={wallets} autoConnect>
+            <WalletModalProvider>
               <Layout>
                 <Head>
                   <title>Monster Lab - 탈중앙화 스테이킹 솔루션</title>
@@ -106,10 +51,9 @@ export default function App({ Component, pageProps }: AppProps) {
                   isClient && <Component {...pageProps} />
                 }
               </Layout>
-            </WagmiConfig>
-          )
-            : null
-        }
+            </WalletModalProvider>
+          </WalletProvider>
+        </ConnectionProvider>
       </React.StrictMode>
     </ChakraProvider>
   );

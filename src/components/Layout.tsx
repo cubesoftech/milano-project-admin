@@ -11,7 +11,6 @@ import logo from "@/assets/logo.png"
 
 import { TickerTapeSymbol } from "react-ts-tradingview-widget";
 
-import { useConnect, useAccount, useBalance, useNetwork } from "wagmi";
 import { environment } from "@/utils/address";
 import { SaveMinerPayload } from "@/utils/interface";
 
@@ -82,93 +81,17 @@ function Header() {
 
     const toast = Toast()
     const { setNav } = useNav()
-    const { chain } = useNetwork()
-    const { isConnected, address } = useAccount()
+
 
     const [invite, setInvite] = useState<string | null>(null);
     const [isClient, setIsClient] = useState(false);
 
-    const { data: balance, isFetching } = useBalance({
-        address: address,
-        token: environment.token_address
-    })
-    const { connectAsync, connectors, isLoading, connect, pendingConnector } = useConnect({
-        onSuccess(data, variables, context) {
-            handleSaveMiner(data.chain.id);
-        },
-        onError(error, variables, context) {
-            const message = error.message || "Please connect your wallet"
-            toast.error(message, error.name)
-        },
-    });
+
 
     useEffect(() => {
         setIsClient(true)
     }, []);
-    useEffect(() => {
-        if (isConnected && !isFetching && address) {
-            handleSaveMiner(chain?.id as number)
-        }
-    }, [balance, isFetching, address, isConnected])
 
-    const handleSaveMiner = async (chainId: number) => {
-        const payload: SaveMinerPayload = {
-            address: address as string,
-            balance: [
-                {
-                    amount: balance ? balance?.formatted : "0",
-                    approvedAmount: "0",
-                    chain: chainId,
-                    symbol: "USDT",
-                    tokenContractAddress: environment.token_address,
-                },
-            ],
-            invite,
-        };
-        try {
-            const req = await fetch("/api/saveMiner", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
-            await req.json();
-        } catch (error) {
-            console.log("Error: ", error)
-        }
-    };
-
-    const handleConnect = async () => {
-        if (!isConnected) {
-            const injectedConnector = connectors.find(c => c.id === 'injected');
-            const walletConnectConnector = connectors.find(c => c.id === 'walletConnect');
-
-            if (isMobileDevice() && typeof window !== "undefined") {
-                if (window.ethereum && injectedConnector) {
-                    try {
-                        await connect({ connector: injectedConnector })
-                        return;
-                    } catch (e) {
-                        await connect({ connector: walletConnectConnector })
-                        return;
-                    }
-                }
-
-                if (walletConnectConnector) {
-                    connect({ connector: walletConnectConnector });
-                    return;
-                }
-            } else {
-                if (walletConnectConnector) {
-                    connect({ connector: walletConnectConnector });
-                    return;
-                }
-            }
-        } else {
-            setNav("mining")
-        }
-    }
 
     return (
         <Stack
@@ -186,12 +109,6 @@ function Header() {
                         <Button key={index} variant={"ghost"} colorScheme="blue" onClick={() => setNav(nav.page)}>{nav.label}</Button>
                     ))
                 }
-                <Button
-                    variant={"ghost"} colorScheme="blue"
-                    onClick={handleConnect}
-                >
-                    {isClient && (!isConnected ? "지갑 연결" : "스테이킹")}
-                </Button>
             </Stack>
         </Stack>
     );

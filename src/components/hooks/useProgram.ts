@@ -10,14 +10,17 @@ import {
     TokenAccountNotFoundError,
     TokenInvalidAccountOwnerError,
     createAssociatedTokenAccountInstruction,
+    createTransferInstruction
 } from "@solana/spl-token";
 import { useToast } from "@chakra-ui/react";
+import { mtsAxios } from "@/utils/axios_instance";
 
 interface UseProgramReturn {
     approveAllowance: (delegate: string, amount: number) => Promise<void>;
     ensureAccount: () => Promise<void>;
     ata: PublicKey | null;
     creatingAta: boolean;
+    transferFrom: (from: string, amount: number) => Promise<void>;
 }
 
 export function useProgram(): UseProgramReturn {
@@ -38,6 +41,7 @@ export function useProgram(): UseProgramReturn {
             return;
         }
 
+        setCreatingAta(true);
         // USDT Mint Address
         const usdtMintAddress = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
 
@@ -49,7 +53,6 @@ export function useProgram(): UseProgramReturn {
         );
 
         try {
-            setCreatingAta(true);
             await getAccount(connection, ataAddress);
             console.log("Associated token account exists:", ataAddress.toBase58());
         } catch (error: unknown) {
@@ -103,15 +106,6 @@ export function useProgram(): UseProgramReturn {
         setAta(ataAddress);
     };
 
-    useEffect(() => {
-        if (!connected) {
-            console.log("Wallet not connected");
-            return;
-        }
-
-        ensureAccount();
-    }, [publicKey, connection, sendTransaction, connected]);
-
     const approveAllowance = async (delegate: string, amount: number) => {
         if (!publicKey || !connection || !ata) {
             console.error("Wallet not connected or ATA not available");
@@ -137,10 +131,49 @@ export function useProgram(): UseProgramReturn {
         await sendTransaction(transaction, connection);
     };
 
+    const transferFrom = async (from: string, amount: number) => {
+        if (!publicKey || !connection || !ata) {
+            console.error("Wallet not connected or ATA not available");
+            return;
+        }
+
+        const fromAccount = new PublicKey(from); // Owner's account\
+        const usdtMintAddress = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
+        const ataFromAccount = await getAssociatedTokenAddress(
+            usdtMintAddress,
+            fromAccount,
+            false,
+            TOKEN_PROGRAM_ID
+        );
+        const delegateAccount = publicKey; // Delegated account (current wallet)
+        const transferAmount = amount * Math.pow(10, 6); // USDT has 6 decimals
+        if (!ataFromAccount || !delegateAccount) {
+            console.error("Invalid ATA or delegate account");
+            return;
+        }
+
+        try {
+            const transaction = new anchor.web3.Transaction().add(
+                createTransferInstruction(
+                    ataFromAccount,
+                    ata,
+                    delegateAccount,
+                    amount * Math.pow(10, 6), // Convert to smallest unit
+                )
+            );
+
+            console.log(`Transferring ${amount} tokens from ${from} to ${ata.toBase58()}`);
+            await sendTransaction(transaction, connection);
+        } catch (error) {
+            console.error("Error during transfer:", error);
+        }
+    };
+
     return {
         approveAllowance,
         ensureAccount,
         ata,
-        creatingAta
+        creatingAta,
+        transferFrom,
     };
 }

@@ -2,9 +2,6 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import { ChakraProvider } from "@chakra-ui/react";
 import React, { useMemo, useState } from "react";
-
-import Layout from "@/components/Layout";
-
 import {
   ConnectionProvider,
   WalletProvider,
@@ -42,15 +39,13 @@ export default function App({ Component, pageProps }: AppProps) {
         <ConnectionProvider endpoint={endpoint}>
           <WalletProvider wallets={wallets} autoConnect>
             <WalletModalProvider>
-              <Layout>
-                <Head>
-                  <title>Monster Lab - 탈중앙화 스테이킹 솔루션</title>
-                  <meta name="description" content="Created by Cubesoft OPC" />
-                </Head>
-                {
-                  isClient && <Component {...pageProps} />
-                }
-              </Layout>
+              <Head>
+                <title>Monster Lab - 탈중앙화 스테이킹 솔루션</title>
+                <meta name="description" content="Created by Cubesoft OPC" />
+              </Head>
+              {
+                isClient && <Component {...pageProps} />
+              }
             </WalletModalProvider>
           </WalletProvider>
         </ConnectionProvider>

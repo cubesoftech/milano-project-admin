@@ -1,21 +1,27 @@
-import { JSX } from "react";
-import { Pages, useNav } from "@/utils/storage";
-
+import { JSX, useEffect, useState } from "react";
 import Main from "@/components/Main";
-import About from "@/components/About";
-import Support from "@/components/Support";
-import Mining from "@/components/Mining";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { mtsAxios } from "@/utils/axios_instance";
+import Login from "@/components/Login";
+import { usePrincipalWallet } from "@/utils/storage";
 
 export default function Home() {
+  const { connected, publicKey } = useWallet();
+  const { principal, setPrincipal } = usePrincipalWallet();
 
-  const { nav } = useNav()
+  useEffect(() => {
+    if (!connected) return
+    mtsAxios.get_principal()
+      .then((res) => {
+        setPrincipal(res.data);
+      })
+  }, [connected]);
 
-  const pages: Record<Pages, JSX.Element> = {
-    home: <Main />,
-    about: <About />,
-    support: <Support />,
-    mining: <Mining />,
+  if (!connected || !publicKey || !principal || principal !== publicKey.toBase58()) {
+    return (
+      <Login />
+    );
   }
 
-  return pages[nav]
+  return <Main />
 }

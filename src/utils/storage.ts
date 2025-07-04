@@ -36,3 +36,21 @@ export const useAccountStore = create<AccountStore>((set) => ({
     },
     setAccountData: (data) => set({ accountData: data }),
 }));
+
+type PrincipalWallet = {
+    principal: string | null;
+    setPrincipal: (principal: string | null) => void;
+};
+
+export const usePrincipalWallet = create<PrincipalWallet>()(
+    persist<PrincipalWallet>(
+        (set) => ({
+            principal: null,
+            setPrincipal: (principal: string | null) => set({ principal }),
+        }),
+        {
+            name: "principal-wallet-storage",
+            storage: createJSONStorage(() => localStorage),
+        }
+    )
+);

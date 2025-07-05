@@ -42,7 +42,7 @@ export default function App({ Component, pageProps }: AppProps) {
           <WalletProvider wallets={wallets} autoConnect>
             <WalletModalProvider>
               <Head>
-                <title>MILANO-FUNDS</title>
+                <title>MILANO-FUND</title>
                 <meta name="description" content="Created by Cubesoft OPC" />
                 <link rel="shortcut icon" href="/m.png" type="image/x-icon" />
               </Head>

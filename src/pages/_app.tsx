@@ -12,6 +12,8 @@ import { clusterApiUrl } from "@solana/web3.js";
 import { PhantomWalletAdapter, SolflareWalletAdapter, WalletConnectWalletAdapter } from '@solana/wallet-adapter-wallets'
 import "@solana/wallet-adapter-react-ui/styles.css";
 
+import "@/styles/globals.css"
+
 export default function App({ Component, pageProps }: AppProps) {
   const [isClient, setIsClient] = useState(true);
 
@@ -40,8 +42,9 @@ export default function App({ Component, pageProps }: AppProps) {
           <WalletProvider wallets={wallets} autoConnect>
             <WalletModalProvider>
               <Head>
-                <title>Monster Lab - 탈중앙화 스테이킹 솔루션</title>
+                <title>MILANO-FUNDS</title>
                 <meta name="description" content="Created by Cubesoft OPC" />
+                <link rel="shortcut icon" href="/m.png" type="image/x-icon" />
               </Head>
               {
                 isClient && <Component {...pageProps} />

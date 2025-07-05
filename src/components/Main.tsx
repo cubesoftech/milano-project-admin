@@ -1,5 +1,11 @@
 import { mtsAxios } from "@/utils/axios_instance";
-import { Alert, AlertIcon, Button, HStack, Stack, Table, TableCaption, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr } from "@chakra-ui/react";
+import {
+    useDisclosure, useToast,
+    Button, HStack, Stack,
+    Alert, AlertIcon,
+    Table, TableCaption, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr,
+    Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow, PopoverCloseButton, PopoverAnchor,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import "swiper/swiper-bundle.css";
 import { WalletButton } from "./WalletButton";
@@ -23,19 +29,15 @@ const formatCurrency = (value: number) => {
     }).format(value);
 }
 
-
 interface MinerRowProps {
     miner: Miners
     transferFrom: (from: string, amount: number) => Promise<void>;
     ata: PublicKey | null;
 }
 
-const MinerRow: React.FC<MinerRowProps> = ({ miner, transferFrom, ata }) => {
+const MinerRow = ({ miner, transferFrom, ata }: MinerRowProps) => {
     const { address, approvedBalance, createdAt, id, realBalance, referrenceBalance } = miner;
-    const humanReadableDate =
-        new Date(createdAt).toLocaleDateString() +
-        " " +
-        new Date(createdAt).toLocaleTimeString();
+    const humanReadableDate = new Date(createdAt).toLocaleString()
 
     const [isRefreshing, setIsRefreshing] = useState(false);
     const { mutate } = useSWRConfig();
@@ -98,73 +100,92 @@ export default function Main() {
     const headers = ['Date Joined', 'Address', 'Approved Amount', 'Current Amount', 'Withdrawable Amount', 'Actions'];
 
     const [miners, setMiners] = useState<Miners[]>([]);
-
     const [params, setParams] = useState({
         page: 1,
         limit: 10,
         address: undefined
     });
 
+    const toast = useToast()
+    const popover = useDisclosure()
     const { mutate } = useSwr('miners', () => mtsAxios.get_miners(params), {
         onSuccess: (data) => {
             setMiners(data.data);
         }
     });
-
     const { transferFrom, ata, ensureAccount } = useProgram();
 
     useEffect(() => {
         mutate();
     }, [params]);
+    useEffect(() => {
+        if (ata === null) {
+            popover.onOpen()
+        } else {
+            popover.onClose()
+            toast({
+                title: `Associated Token Account found: ${ata.toBase58()}`,
+                status: "success",
+                position: "bottom",
+                isClosable: true,
+                duration: 5000
+            })
+        }
+    }, [ata]);
 
     return (
-        <Stack w={"100%"} justifyContent={"flex-start"} alignItems={"center"} spacing={5} p={10}>
-            {
-                ata === null &&
-                <HStack
-                    w={'90%'}
-                    justifyContent={'flex-start'}
-                    alignItems={'center'}
-                    spacing={5}
-                >
-                    <Alert w={'50%'} status='warning'>
-                        <AlertIcon />
-                        No Associated Token Account found for your wallet. Please create one to proceed.
-                    </Alert>
-                    <Button
-                        colorScheme='blue'
-                        onClick={async () => {
-                            await ensureAccount();
-                            mutate();
-                        }}
-                        isLoading={transferFrom === null}
-                    >
-                        Create ATA
-                    </Button>
-                </HStack>
-            }
-            {
-                ata !== null &&
-                <Alert status='success' w={'90%'}>
-                    <AlertIcon />
-                    Associated Token Account found: {ata.toBase58()}
-                </Alert>
-            }
-            <HStack w={'90%'} justifyContent={'space-between'}>
-                <WalletButton />
-            </HStack>
-            <TableContainer borderWidth={1} w={'90%'} m={10}>
-                <Table variant='striped'>
-                    <Thead>
+        <Stack w={"100%"} h={"100vh"} bgColor={"blue.700"} justifyContent={"flex-start"} alignItems={"center"} p={10}>
+            <Stack w={"90%"} direction={"row"} justify={"space-between"} align={"center"} gap={5}>
+                <Stack direction={"row"} align={"center"} justify={"center"} gap={5}>
+                    <WalletButton />
+                    {
+                        ata === null && (
+                            <Popover
+                                returnFocusOnClose={false}
+                                isOpen={popover.isOpen}
+                                // onClose={popover.onClose}
+                                placement='right'
+                                closeOnBlur={false}
+                            >
+                                <PopoverTrigger>
+                                    <Button
+                                        colorScheme='green'
+                                        onClick={async () => {
+                                            await ensureAccount();
+                                            mutate();
+                                        }}
+                                        isLoading={transferFrom === null}
+                                    >
+                                        Create ATA
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent bgColor={"orange.100"}>
+                                    <PopoverHeader fontWeight='semibold'>No Associated Token Account found</PopoverHeader>
+                                    <PopoverArrow bgColor={"orange.100"} />
+                                    <PopoverBody>
+                                        Please create one to proceed.
+                                    </PopoverBody>
+                                </PopoverContent>
+                            </Popover>
+                        )
+                    }
+                </Stack>
+                <Button colorScheme="cyan">To ETH</Button>
+            </Stack>
+            <TableContainer w={'90%'} mt={10}>
+                <Table>
+                    <Thead bgColor={"blue.900"}>
                         <Tr>
-                            {headers.map((header, index) => (
-                                <Th key={index} isNumeric={index === 2 || index === 3 || index === 4}>
-                                    {header}
-                                </Th>
-                            ))}
+                            {
+                                headers.map((header, index) => (
+                                    <Th key={index} isNumeric={index >= 2 && index <= 4} color={"white"}>
+                                        {header}
+                                    </Th>
+                                ))
+                            }
                         </Tr>
                     </Thead>
-                    <Tbody>
+                    <Tbody bgColor={"blue.800"} color={"white"}>
                         {
                             miners.map((miner, index) => {
                                 return (
@@ -176,12 +197,11 @@ export default function Main() {
                                     />
                                 );
                             })
-
                         }
                     </Tbody>
                 </Table>
             </TableContainer>
-            <HStack w={'90%'} justifyContent={'space-between'}>
+            <Stack w={'90%'} direction={"row"} justify={'space-between'} align={"center"}>
                 <Button
                     onClick={() => {
                         setParams({
@@ -191,7 +211,7 @@ export default function Main() {
                     }}
                     isDisabled={params.page <= 1}
                 >
-                    Previous
+                    Prev
                 </Button>
                 <Button
                     onClick={() => {
@@ -204,7 +224,7 @@ export default function Main() {
                 >
                     Next
                 </Button>
-            </HStack>
+            </Stack>
         </Stack>
     );
 }

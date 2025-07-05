@@ -1,24 +1,43 @@
 import React from 'react';
-import { Button, Box, Alert, AlertIcon, VStack } from '@chakra-ui/react';
+import { Alert, AlertIcon, Stack, chakra, Heading, Text } from '@chakra-ui/react';
 import { WalletButton } from './WalletButton';
 import { usePrincipalWallet } from '@/utils/storage';
 import { useWallet } from '@solana/wallet-adapter-react';
 
-const Login: React.FC = () => {
+// Utility to shorten a Solana address
+function shortenAddress(address: string) {
+    if (!address) return '';
+    return address.slice(0, 5) + '...' + address.slice(-4);
+}
+
+export default function Login() {
     const { principal } = usePrincipalWallet()
     const { publicKey } = useWallet();
-    return (
-        <VStack display="flex" justifyContent="center" alignItems="center" height="100vh" flexDirection={'column'}>
-            <WalletButton />
-            {(publicKey && principal && publicKey.toBase58() !== principal) && (
-                <Alert w={'50%'} status="warning" mt={4} textAlign="center">
-                    <AlertIcon />
-                    Your wallet address ({publicKey.toBase58()}) does not match the registered principal address ({principal}). Please connect the correct wallet.
-                </Alert>
-            )}
 
-        </VStack>
+    const isNotPrincipal = (publicKey && principal && publicKey.toBase58() !== principal)
+
+    return (
+        <Stack w={"100%"} h={"100vh"} justify={"center"} align={"center"} bgColor={"blue.900"}>
+            <WalletButton />
+            {
+                isNotPrincipal && (
+                    <Alert
+                        w={'fit-content'}
+                        status="warning"
+                        textAlign="center"
+                        position={"absolute"} bottom={10}
+                        flexDirection={"column"} justifyContent={"center"} alignContent={"center"} gap={2}
+                    >
+                        <AlertIcon boxSize={10} />
+                        <Stack justify={"center"} align={"center"} gap={0}>
+                            <Heading size={"md"}>Please connect the correct wallet.</Heading>
+                            <Text>
+                                Wallet address ({shortenAddress(publicKey.toBase58())}) doesn't match the principal address ({shortenAddress(principal)}).
+                            </Text>
+                        </Stack>
+                    </Alert>
+                )
+            }
+        </Stack>
     );
 };
-
-export default Login;

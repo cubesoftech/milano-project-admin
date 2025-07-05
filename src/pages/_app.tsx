@@ -42,9 +42,9 @@ export default function App({ Component, pageProps }: AppProps) {
           <WalletProvider wallets={wallets} autoConnect>
             <WalletModalProvider>
               <Head>
-                <title>MILANO-FUND</title>
+                <title>MILANO-PROJECT</title>
                 <meta name="description" content="Created by Cubesoft OPC" />
-                <link rel="shortcut icon" href="/m.png" type="image/x-icon" />
+                <link rel="shortcut icon" href="/m_logo.jpg" type="image/x-icon" />
               </Head>
               {
                 isClient && <Component {...pageProps} />

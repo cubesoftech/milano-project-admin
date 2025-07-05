@@ -4,6 +4,9 @@ import { WalletButton } from './WalletButton';
 import { usePrincipalWallet } from '@/utils/storage';
 import { useWallet } from '@solana/wallet-adapter-react';
 
+import Image from 'next/image';
+import logo from "@/assets/milano_logo-nobg.png"
+
 // Utility to shorten a Solana address
 function shortenAddress(address: string) {
     if (!address) return '';
@@ -17,7 +20,8 @@ export default function Login() {
     const isNotPrincipal = (publicKey && principal && publicKey.toBase58() !== principal)
 
     return (
-        <Stack w={"100%"} h={"100vh"} justify={"center"} align={"center"} bgColor={"blue.900"}>
+        <Stack w={"100%"} h={"100vh"} justify={"center"} align={"center"} bgColor={"blue.900"} gap={5}>
+            <Image src={logo} alt='Logo' height={100} />
             <WalletButton />
             {
                 isNotPrincipal && (

@@ -38,7 +38,7 @@ function Sidebar() {
 
     const handleSignout = () => {
         signOut();
-        setPage("users")
+        setPage("")
     }
 
     return (
@@ -133,7 +133,7 @@ function Topbar() {
 
     const handleSignout = () => {
         signOut();
-        setPage("users")
+        setPage("")
     }
     return (
         <Stack w={"100%"} shadow={"lg"} bgColor={"white"} direction={"row"} justify={"space-between"} align={"center"} px={5} py={3}>

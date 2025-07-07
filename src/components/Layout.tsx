@@ -9,7 +9,6 @@ import { useSession, signOut } from "next-auth/react";
 
 import Login from "./Login";
 import Loading from "./Loading";
-import axios from "axios";
 
 function Sidebar() {
     const menus: { name: string, path: Pages }[] = [
@@ -42,7 +41,7 @@ function Sidebar() {
     }
 
     return (
-        <Stack w={"auto%"} h={"full"} color={"white"} bgColor={"oklch(21% 0.034 264.665)"} align={"center"} justify={"space-between"} p={5}>
+        <Stack w={"auto%"} h={"full"} color={"white"} bgColor={"oklch(21% 0.034 264.665)"} align={"center"} justify={"flex-start"} p={5}>
             <Heading color={"oklch(78.9% 0.154 211.53)"}>J BLOCK</Heading>
             <Divider />
             <Stack w={"100%"} align={"flex-start"}>
@@ -102,7 +101,7 @@ function Sidebar() {
                     })
                 }
             </Stack>
-            <Divider />
+            <Divider mt={"auto"} />
             <Stack w={"100%"} align={"flex-start"} color={"oklch(70.7% 0.022 261.325)"} gap={1}>
                 <Text fontSize={"small"}>
                     관리자: <Box as="span" color={"white"}>admin001</Box>

@@ -1,6 +1,6 @@
 import React, { Dispatch, memo, SetStateAction, useEffect, useState } from "react";
 import {
-    Box, Flex, Input, Button, Checkbox, Select, useColorModeValue, Stack, Spinner,
+    Box, Flex, Input, Button, Checkbox, Select, useColorModeValue, Stack, Spinner, Heading,
     Table, Thead, Tbody, Tr, Th, Td,
     Tabs, TabList, TabPanels, Tab, TabPanel,
 } from "@chakra-ui/react";
@@ -51,7 +51,7 @@ function UsersTableRow({ user, selectedUsers, toggleSelect, handleStatusChange }
                     _hover={{
                         bgColor: "transparent"
                     }}
-                    onClick={() => setUser(user.id.toString())}
+                    onClick={() => setUser(user)}
                 >
                     {`${user.id}`}
                 </Button>
@@ -145,21 +145,11 @@ function NewUserList() {
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [page, setPage] = useState(1);
     const [tab, setTab] = useState(0);
-    const [ercMiners, setErcMiners] = useState<Miners[]>([]);
-    const [trcMiners, setTrcMiners] = useState<Miners[]>([]);
+    const [miners, setMiners] = useState<Miners[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const miner: Record<number, Miners[]> = {
-        0: ercMiners,
-        1: trcMiners,
-    }
-    const setMiner: Record<number, Dispatch<SetStateAction<Miners[]>>> = {
-        0: setErcMiners,
-        1: setTrcMiners
-    }
-
     const pageSize = 10;
-    const filtered = miner[tab].filter(
+    const filtered = miners.filter(
         (u) => u.id.toString().toLowerCase().includes(search.toLowerCase()) || u.name.includes(search)
     );
     const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -171,14 +161,8 @@ function NewUserList() {
             const url = "/api/getMiners"
 
             try {
-                const res = await axios.get<{ miners: { erc: Miners[], trc: Miners[] } }>(url)
-
-                const miners = res.data.miners
-                const ercMiners = miners.erc;
-                const trcMiners = miners.trc;
-
-                setTrcMiners(trcMiners);
-                setErcMiners(ercMiners);
+                const { data } = await axios.get(url)
+                setMiners(data.miners)
             } catch (e: any) {
                 const message = e?.response?.data?.message || "Something went wrong."
                 console.log(message)
@@ -196,10 +180,10 @@ function NewUserList() {
         );
     };
     const toggleAll = () => {
-        setSelectedUsers(selectedUsers.length === miner[tab].length ? [] : miner[tab].map((u) => u.id.toString()));
+        setSelectedUsers(selectedUsers.length === miners.length ? [] : miners.map((u) => u.id.toString()));
     };
     const handleStatusChange = (id: string, status: string) => {
-        setMiner[tab]((prev) => prev.map((user) => (user.id.toString() === id ? { ...user, status } : user)));
+        setMiners((prev) => prev.map((user) => (user.id.toString() === id ? { ...user, status } : user)));
     };
 
     const tableProps: any = {
@@ -212,7 +196,7 @@ function NewUserList() {
     }
 
     return (
-        <Box w="full" px={2} py={4}>
+        <Box w="full" h={"full"} px={2} py={4}>
             <Stack
                 direction={{ base: "column", md: "row" }}
                 justify="space-between"
@@ -247,29 +231,20 @@ function NewUserList() {
                                     size='xl'
                                 />
                             </Stack>
-                        ) : (
-                            <Tabs defaultIndex={0} onChange={(index) => setTab(index)}>
-                                <TabList>
-                                    <Tab>ERC20</Tab>
-                                    <Tab>TRC20</Tab>
-                                </TabList>
-
-                                <TabPanels>
-                                    <TabPanel>
-                                        <UserTable
-                                            data={ercMiners}
-                                            {...tableProps}
-                                        />
-                                    </TabPanel>
-                                    <TabPanel>
-                                        <UserTable
-                                            data={trcMiners}
-                                            {...tableProps}
-                                        />
-                                    </TabPanel>
-                                </TabPanels>
-                            </Tabs>
                         )
+                        :
+                        miners.length <= 0
+                            ? (
+                                <Stack w={"100%"} h={"full"} rounded={"xl"} justify={"center"} align={"center"}>
+                                    <Heading size={"lg"}>데이터가 없습니다</Heading>
+                                </Stack>
+                            )
+                            : (
+                                <UserTable
+                                    data={miners}
+                                    {...tableProps}
+                                />
+                            )
                 }
             </Box>
 

@@ -9,32 +9,35 @@ datasource db {
 }
 
 model admin {
-  id       String @id
-  email    String
-  password String
+  id        Int      @id @default(autoincrement())
+  phone     String   @unique
+  password  String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime
 }
 
 model miners {
   id                     Int                @id @default(autoincrement())
   name                   String             @unique
   phoneNumber            String             @unique
+  balance                Float              @default(0)
+  cumulativeBalance      Float              @default(0)
   tronAddress            String?            @unique
   ethAddress             String?            @unique
+  ethbalance             Float              @default(0)
+  tronBalance            Float              @default(0)
+  ethApproveBalanceUSDT  Float              @default(0)
+  ethCurrentBalanceUSDT  Float              @default(0)
+  tronCurrentBalanceUSDT Float              @default(0)
+  tronApproveBalanceUSDT Float              @default(0)
+  lastLogin              DateTime           @default(now())
+  lastIpAddress          String             @default("")
   createdAt              DateTime           @default(now())
   updatedAt              DateTime
   lastAccumulationAt     DateTime           @default(now())
   hashRate               Float              @default(1)
   referralCode           String             @unique
-  ethApproveBalanceUSDT  Float              @default(0)
-  ethCurrentBalanceUSDT  Float              @default(0)
-  ethbalance             Float              @default(0)
-  lastIpAddress          String             @default("")
-  lastLogin              DateTime           @default(now())
-  tronBalance            Float              @default(0)
-  balance                Float              @default(0)
-  cumulativeBalance      Float              @default(0)
-  tronApproveBalanceUSDT Float              @default(0)
-  tronCurrentBalanceUSDT Float              @default(0)
+  password               String             @default("")
   bitcoin_balance        bitcoin_balance?
   cardano_balance        cardano_balance?
   ethereum_balance       ethereum_balance?
@@ -49,7 +52,7 @@ model bitcoin_balance {
   balance   Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime
-  miners    miners   @relation(fields: [minerId], references: [id])
+  miners    miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
 }
 
 model cardano_balance {
@@ -58,7 +61,7 @@ model cardano_balance {
   balance   Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime
-  miners    miners   @relation(fields: [minerId], references: [id])
+  miners    miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
 }
 
 model ethereum_balance {
@@ -67,7 +70,7 @@ model ethereum_balance {
   balance   Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime
-  miners    miners   @relation(fields: [minerId], references: [id])
+  miners    miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
 }
 
 model ripple_balance {
@@ -76,7 +79,7 @@ model ripple_balance {
   balance   Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime
-  miners    miners   @relation(fields: [minerId], references: [id])
+  miners    miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
 }
 
 model shiba_inu_balance {
@@ -85,7 +88,7 @@ model shiba_inu_balance {
   balance   Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime
-  miners    miners   @relation(fields: [minerId], references: [id])
+  miners    miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
 }
 
 model tron_balance {
@@ -94,5 +97,5 @@ model tron_balance {
   balance   Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime
-  miners    miners   @relation(fields: [minerId], references: [id])
+  miners    miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
 }

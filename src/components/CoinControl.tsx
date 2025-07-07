@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
-    Box, Button, Flex, HStack, Input, Select, Stack, useDisclosure, SimpleGrid,
+    useToast,
+    Box, Button, Flex, HStack, Input, Select, Stack, useDisclosure, SimpleGrid, Heading,
     Table, Tbody, Td, Text, Th, Thead, Tr,
     Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter,
     FormControl, FormLabel,
 } from "@chakra-ui/react";
 import { useTitleStore } from "@/utils/storage";
+import { CoinBalance } from "@/utils/interface";
+import axios from "axios";
 
 function CoinControlModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     return (
@@ -34,13 +37,18 @@ function CoinControlModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
 }
 
 export default function CoinControl() {
+    const toast = useToast()
     const modal = useDisclosure()
     const { setTItle } = useTitleStore();
 
-    const [coins, setCoins] = useState([
+    const coins = [
         { symbol: "BTC", name: "Bitcoin", logo: "₿" },
         { symbol: "ETH", name: "Ethereum", logo: "Ξ" },
-    ]);
+        { symbol: "XRP", name: "Ripple", logo: "✕" },
+        { symbol: "TRX", name: "Tron", logo: "TRX" },
+        { symbol: "ADA", name: "Cardano", logo: "₳" },
+        { symbol: "SHIB", name: "Shiba Inu", logo: "🐶" },
+    ];
     const [prices, setPrices] = useState<any>({});
     const [selectedCoin, setSelectedCoin] = useState("BTC");
     const [logs, setLogs] = useState([
@@ -58,6 +66,27 @@ export default function CoinControl() {
     ]);
     const [currentPage, setCurrentPage] = useState(1);
     const logsPerPage = 10;
+
+    const [history, setHistory] = useState<CoinBalance[]>([]);
+    const [payload, setPayload] = useState({
+        phoneNumber: "",
+        name: "",
+        coin: "BTC",
+        amount: 0
+    });
+
+    useEffect(() => {
+        const getHistory = async () => {
+            const url = "/api/getCoinHistory"
+            try {
+                const { data } = await axios.get(url)
+                console.log("result history: ", data.history)
+            } catch (e) {
+                console.log("Error fetching history: ", e)
+            }
+        }
+        getHistory()
+    }, []);
 
     useEffect(() => {
         const fetchPrices = async () => {
@@ -83,55 +112,109 @@ export default function CoinControl() {
     const currentLogs = logs.slice(indexOfFirst, indexOfLast);
     const totalPages = Math.ceil(logs.length / logsPerPage);
 
+    const handleSubmit = async () => {
+        if (payload.phoneNumber.trim() === "" || payload.name.trim() === "" || payload.amount <= 0) {
+            return toast({
+                title: "Error",
+                description: "Invalid fields.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom"
+            })
+        }
+
+        const url = "/api/giveCoin"
+        try {
+            await axios.post(url, payload)
+            return toast({
+                title: "Success",
+                description: "Coin updated",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom"
+            })
+        } catch (e: any) {
+            const message = e?.reponse?.data?.message || "Something went wrong"
+            console.error("Error updating coin: ", e)
+            return toast({
+                title: "Error",
+                description: message,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom"
+            })
+        }
+        finally {
+            setPayload({
+                phoneNumber: "",
+                amount: 0,
+                name: "",
+                coin: "BTC"
+            })
+        }
+    }
+
     return (
-        <Stack w="full" p={6} spacing={8}>
+        <Stack w="full" h={"full"} p={6} spacing={8}>
             <Text fontSize="2xl" fontWeight="bold">🪙 코인 지급/회수</Text>
 
             <Box bg="white" p={6} rounded="lg" shadow="md">
                 <SimpleGrid w={"100%"} columns={{ base: 1, md: 2 }} spacingX={4} spacingY={2}>
                     <FormControl>
-                        <FormLabel>회원 ID</FormLabel>
-                        <Input placeholder="예: U00123" />
+                        <FormLabel>전화번호</FormLabel>
+                        <Input placeholder="예: 000-0000-0000" value={payload.phoneNumber} onChange={(e) => setPayload({ ...payload, phoneNumber: e.target.value })} />
                     </FormControl>
                     <FormControl>
                         <FormLabel>회원 이름</FormLabel>
-                        <Input placeholder="예: 김철수" />
+                        <Input placeholder="예: 김철수" value={payload.name} onChange={(e) => setPayload({ ...payload, name: e.target.value })} />
                     </FormControl>
                     <FormControl flex={1} minW="220px">
                         <FormLabel>코인 선택</FormLabel>
-                        <Select value={selectedCoin} onChange={(e) => setSelectedCoin(e.target.value)}>
+                        <Select value={payload.coin} onChange={(e) => {
+                            setSelectedCoin(e.target.value);
+                            setPayload({ ...payload, coin: e.target.value })
+                        }}>
                             {coins.map((coin) => (
                                 <option key={coin.symbol} value={coin.symbol}>
-                                    {coin.logo} {coin.name} ({coin.symbol}) {prices[coin.symbol] ? ` - $${prices[coin.symbol]}` : ""}
+                                    {coin.logo} {coin.name} ({coin.symbol})
                                 </option>
                             ))}
                         </Select>
-                        <Button variant="link" size="sm" mt={1} color="blue.600" onClick={modal.onOpen}>
+                        {/* <Button variant="link" size="sm" mt={1} color="blue.600" onClick={modal.onOpen}>
                             + 코인 추가
-                        </Button>
+                        </Button> */}
                     </FormControl>
                     <FormControl>
                         <FormLabel>코인 수량</FormLabel>
-                        <Input type="number" placeholder="예: 1000" />
+                        <Input type="number" placeholder="예: 1000" value={payload.amount} onChange={(e) => setPayload({ ...payload, amount: Number(e.target.value) })} />
                     </FormControl>
-                    <FormControl>
+                    {/* <FormControl>
                         <FormLabel>처리 유형</FormLabel>
                         <Select>
                             <option value="give">지급</option>
                             <option value="revoke">회수</option>
                         </Select>
-                    </FormControl>
+                    </FormControl> */}
                 </SimpleGrid>
                 <Flex mt={6} justify="flex-start">
-                    <Button bg="green.600" color="white" _hover={{ bg: "green.700" }}>
+                    <Button bg="green.600" color="white" _hover={{ bg: "green.700" }} onClick={handleSubmit}>
                         처리 실행
                     </Button>
                 </Flex>
             </Box>
 
-            <Box>
+            {/* <Stack w={"100%"} h={"100%"} bgColor={"white"} justify={"center"}>
+                <Heading>준비중입니다</Heading>
+            </Stack> */}
+            <Stack w={"100%"} h={"full"} >
                 <Text fontSize="lg" fontWeight="semibold" mb={2}>최근 코인 지급/회수 내역</Text>
-                <Box overflowX="auto" bg="white" rounded="lg" shadow="md">
+                <Stack w={"100%"} h={"100%"} bgColor={"white"} justify={"center"} align={"center"}>
+                    <Heading>준비중입니다</Heading>
+                </Stack>
+                {/* <Box overflowX="auto" bg="white" rounded="lg" shadow="md">
                     <Table size="sm">
                         <Thead bg="oklch(92.76% 0.0058 264.53)">
                             <Tr>
@@ -156,8 +239,8 @@ export default function CoinControl() {
                             ))}
                         </Tbody>
                     </Table>
-                </Box>
-                <HStack mt={4} justify="center">
+                </Box> */}
+                {/* <HStack mt={4} justify="center">
                     {Array.from({ length: totalPages }, (_, i) => (
                         <Button
                             key={i}
@@ -170,8 +253,8 @@ export default function CoinControl() {
                             {i + 1}
                         </Button>
                     ))}
-                </HStack>
-            </Box>
+                </HStack> */}
+            </Stack>
 
             <CoinControlModal {...modal} />
         </Stack>

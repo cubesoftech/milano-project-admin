@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-import { Pages } from "./interface";
+import { Miners, Pages } from "./interface";
 
 interface Page {
     page: Pages;
@@ -49,12 +49,12 @@ export const useAgencyStore = create<Agency>(
 )
 
 interface User {
-    user: string | null;
-    setUser: (user: string | null) => void
+    user: Miners | null;
+    setUser: (user: Miners | null) => void
 }
 export const useUserStore = create<User>(
     (set) => ({
         user: null,
-        setUser: (user: string | null) => set({ user })
+        setUser: (user: Miners | null) => set({ user })
     })
 )

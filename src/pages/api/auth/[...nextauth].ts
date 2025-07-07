@@ -18,16 +18,17 @@ export default NextAuth({
 
                 const admin = await prisma.admin.findFirst({
                     where: {
-                        email,
+                        phone: email,
                         password,
                     }
                 })
 
                 if (admin) {
-                    return admin
+                    return { id: admin.id.toString(), email: admin.phone, name: admin.phone, image: admin.id.toString() }
                 } else {
                     return null
                 }
+
             }
         })
     ],

@@ -29,7 +29,7 @@ export interface Miners {
     tron_balance: CoinBalance;
 }
 
-interface CoinBalance {
+export interface CoinBalance {
     id: number;
     minerId: number;
     balance: number;

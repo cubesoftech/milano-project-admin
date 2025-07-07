@@ -13,22 +13,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        const erc = await prisma.miners.findMany({
-            where: {
-                ethAddress: {
-                    not: null
-                }
+        const miners = await prisma.miners.findMany({
+            orderBy: {
+                createdAt: 'asc'
             }
-        })
-        const trc = await prisma.miners.findMany({
-            where: {
-                tronAddress: {
-                    not: null
-                }
-            }
-        })
+        });
 
-        return res.status(200).json({ miners: { erc, trc } })
+        return res.status(200).json({ miners })
     } catch (e) {
         return res.status(500).json({ message: "Internal server error." })
     }

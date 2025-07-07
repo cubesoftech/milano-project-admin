@@ -36,7 +36,7 @@ export default function Login() {
                     toast.error("잘못된 자격 증명");
                 } else {
                     toast.success("로그인 성공");
-                    setPage("");
+                    setPage("users");
                 }
             })
     };

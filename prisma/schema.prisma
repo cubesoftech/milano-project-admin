@@ -44,6 +44,8 @@ model miners {
   ripple_balance         ripple_balance?
   shiba_inu_balance      shiba_inu_balance?
   tron_balance           tron_balance?
+  usdt_balance           usdt_balance?
+  coin_logs              coin_logs[]
 }
 
 model bitcoin_balance {
@@ -98,4 +100,23 @@ model tron_balance {
   createdAt DateTime @default(now())
   updatedAt DateTime
   miners    miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
+}
+
+model usdt_balance {
+  id        Int      @id @default(autoincrement())
+  minerId   Int      @unique
+  balance   Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  miners    miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
+}
+
+model coin_logs {
+  id        Int      @id @default(autoincrement())
+  minerId   Int
+  coin      String
+  balance   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  miner     miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
 }

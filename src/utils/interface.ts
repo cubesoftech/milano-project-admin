@@ -36,3 +36,11 @@ export interface CoinBalance {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface Coinlog {
+    id: number;
+    name: string;
+    coin: string;
+    amount: number;
+    createdAt: string;
+}

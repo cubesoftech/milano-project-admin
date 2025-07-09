@@ -167,7 +167,7 @@ export default function Signup() {
                     onClick={() => setRefetch(true)}
                     isLoading={isLoading}
                 >
-                    잔액 새로고침
+                    새로고침
                 </Button>
             </Stack>
 

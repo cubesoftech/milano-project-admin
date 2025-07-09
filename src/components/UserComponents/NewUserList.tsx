@@ -317,7 +317,7 @@ function NewUserList() {
                                             onChange={toggleAll}
                                         />
                                     </Th>
-                                    <Th>회원 ID</Th>
+                                    <Th>전화번호</Th>
                                     <Th>이름</Th>
                                     <Th>이메일</Th>
                                     <Th>상태</Th>
@@ -350,7 +350,7 @@ function NewUserList() {
                                                     }}
                                                     onClick={() => setUser(miner)}
                                                 >
-                                                    {`${miner.id}`}
+                                                    {miner.phoneNumber}
                                                 </Button>
                                             </Td>
                                             <Td>{miner.name}</Td>

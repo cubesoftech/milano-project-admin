@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import {
-    Box, Text, Stack, SimpleGrid
+    Box, Text, Stack, SimpleGrid, Divider
 } from "@chakra-ui/react";
 import { useUserStore } from "@/utils/storage";
 
@@ -25,10 +25,14 @@ function NewUserDetails() {
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm">
-                    <Text fontWeight="semibold" mb={2}>계좌 정보</Text>
-                    <Text><strong>은행명:</strong> 준비중입니다</Text>
-                    <Text><strong>계좌번호:</strong> 준비중입니다</Text>
-                    <Text><strong>예금주:</strong> 준비중입니다</Text>
+                    <Text fontWeight="semibold" mb={2}>지갑 정보</Text>
+                    <Text><strong>출금 가능 잔액:</strong> {user.cumulativeBalance}</Text>
+                    <Divider my={2} />
+                    <Text><strong>ETH 주소:</strong> {user.ethAddress}</Text>
+                    <Text><strong>erc20 잔액:</strong> {user.ethbalance.toLocaleString()}</Text>
+                    <Divider my={2} />
+                    <Text><strong>TRON 주소:</strong> {user.tronAddress}</Text>
+                    <Text><strong>trc20 잔액:</strong> {user.tronBalance.toLocaleString()}</Text>
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm">

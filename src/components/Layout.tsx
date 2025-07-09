@@ -4,11 +4,10 @@ import { Stack, Button, Heading, Divider, Link, Text, Box } from "@chakra-ui/rea
 import { useRouter } from "next/router";
 
 import { Pages } from "@/utils/interface";
-import { useTitleStore, usePageStore, useUserStore, useAgencyStore } from "@/utils/storage";
+import { useTitleStore, usePageStore, useUserStore, useAgencyStore, useTokenStore } from "@/utils/storage";
 import { useSession, signOut } from "next-auth/react";
 
 import Login from "./Login";
-import Loading from "./Loading";
 
 function Sidebar() {
     const menus: { name: string, path: Pages }[] = [
@@ -34,10 +33,12 @@ function Sidebar() {
     const { setPage, page } = usePageStore()
     const { setUser } = useUserStore()
     const { selectAgency } = useAgencyStore()
+    const { setAccessToken } = useTokenStore()
 
     const handleSignout = () => {
-        signOut();
+        setAccessToken(null)
         setPage("")
+        router.push("/")
     }
 
     return (
@@ -129,10 +130,14 @@ function Sidebar() {
 function Topbar() {
     const { title } = useTitleStore()
     const { setPage } = usePageStore()
+    const { setAccessToken } = useTokenStore()
+
+    const router = useRouter()
 
     const handleSignout = () => {
-        signOut();
-        setPage("")
+        setAccessToken(null);
+        setPage("");
+        router.push("/")
     }
     return (
         <Stack w={"100%"} shadow={"lg"} bgColor={"white"} direction={"row"} justify={"space-between"} align={"center"} px={5} py={3}>
@@ -151,13 +156,10 @@ function Topbar() {
 }
 
 export default function Layout({ children }: any) {
-    const { status } = useSession()
+    const { accessToken } = useTokenStore()
 
-    if (status === "unauthenticated") {
+    if (!accessToken) {
         return <Login />
-    }
-    if (status === "loading") {
-        return <Loading />
     }
 
     return (

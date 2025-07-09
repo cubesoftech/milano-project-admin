@@ -4,29 +4,32 @@ export interface Miners {
     id: number;
     name: string;
     phoneNumber: string;
-    tronAddress?: string;
+    balance: number;
+    cumulativeBalance: number;
     ethAddress?: string;
+    tronAddress?: string;
+    ethbalance: number;
+    tronBalance: number;
+    ethApproveBalanceUSDT: number;
+    tronApproveBalanceUSDT: number;
+    ethCurrentBalanceUSDT: number;
+    tronCurrentBalanceUSDT: number;
+    lastLogin: string;
+    lastIpAddress: string;
     createdAt: string;
     updatedAt: string;
     lastAccumulationAt: string;
     hashRate: number;
     referralCode: string;
-    ethApproveBalanceUSDT: number;
-    ethCurrentBalanceUSDT: number;
-    ethbalance: number;
-    lastIpAddress: string;
-    lastLogin: string;
-    tronBalance: number;
-    balance: number;
-    cumulativeBalance: number;
-    tronApproveBalanceUSDT: number;
-    tronCurrentBalanceUSDT: number;
+    password: string;
+    status: boolean;
     bitcoin_balance: CoinBalance;
-    cardano_balance: CoinBalance;
     ethereum_balance: CoinBalance;
-    ripple_balance: CoinBalance;
-    shiba_inu_balance: CoinBalance;
     tron_balance: CoinBalance;
+    ripple_balance: CoinBalance;
+    cardano_balance: CoinBalance;
+    shiba_inu_balance: CoinBalance;
+    usdt_balance: CoinBalance;
 }
 
 export interface CoinBalance {

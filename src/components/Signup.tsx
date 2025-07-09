@@ -1,10 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import {
-    Box, Button, Checkbox, Flex, Input, Select, Stack, useColorModeValue,
+    Box, Button, Checkbox, Flex, Input, Select, Stack, useColorModeValue, Text, Spinner,
     Table, Tbody, Td, Th, Thead, Tr,
 } from "@chakra-ui/react";
 import { useTitleStore } from "@/utils/storage";
+import { Miners } from "@/utils/interface";
+import { api } from "@/utils/api";
+import UseToastHooks from "@/hooks/UseToastHooks";
 
 interface Request {
     id: string;
@@ -37,78 +40,102 @@ const dummyRequests = Array.from({ length: 25 }, (_, i): Request => ({
 export default function Signup() {
     const bg = useColorModeValue("white", "gray.700");
     const headerBg = useColorModeValue("gray.100", "gray.600");
-
-    const pageSize = 10;
+    const size = 25
 
     const { setTItle } = useTitleStore()
+    const toast = UseToastHooks()
 
-    const [requests, setRequests] = useState(dummyRequests);
-    const [page, setPage] = useState(1);
     const [selected, setSelected] = useState<string[]>([]);
-    const [filter, setFilter] = useState("전체");
-    const [search, setSearch] = useState("");
+    const [payload, setPayload] = useState({
+        search: "",
+        page: 1
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [data, setData] = useState<Miners[]>([]);
+    const [total, setTotal] = useState(1);
+    const [refetch, setRefetch] = useState(false);
 
     useEffect(() => {
         setTItle("회원가입 관리")
     }, []);
-
-    const handleApprove = (id: string) => {
-        setRequests((prev) =>
-            prev.map((r) =>
-                r.id === id
-                    ? {
-                        ...r,
-                        status: "승인",
-                        handler: "관리자1",
-                        handledAt: new Date().toLocaleString(),
-                    }
-                    : r
-            )
-        );
-    };
-    const handleReject = (id: string) => {
-        const memo = prompt("거절 사유를 입력하세요:", "중복 신청");
-        if (!memo) return;
-        setRequests((prev) =>
-            prev.map((r) =>
-                r.id === id
-                    ? {
-                        ...r,
-                        status: "거절",
-                        handler: "관리자1",
-                        handledAt: new Date().toLocaleString(),
-                        memo,
-                    }
-                    : r
-            )
-        );
-    };
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setIsLoading(true)
+            try {
+                const { data, message, pagination } = await api.minersSignup({})
+                const { total } = pagination
+                setData(data)
+                setTotal(total)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchUsers()
+    }, []);
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setIsLoading(true)
+            try {
+                const { data, message, pagination } = await api.minersSignup({ page: payload.page.toString() })
+                const { total } = pagination
+                setData(data)
+                setTotal(total)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchUsers()
+    }, [payload.page]);
+    useEffect(() => {
+        if (refetch) {
+            const fetchUsers = async () => {
+                setIsLoading(true)
+                try {
+                    const { data, message, pagination } = await api.minersSignup({})
+                    const { total } = pagination
+                    setData(data)
+                    setTotal(total)
+                } catch (e: any) {
+                    const message = e?.response?.data?.message || "Something went wrong"
+                    console.error("Error fetching user lists: ", message)
+                } finally {
+                    setIsLoading(false)
+                    setRefetch(false)
+                }
+            }
+            fetchUsers()
+        }
+    }, [refetch]);
 
     const toggleSelect = (id: string) => {
         setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
     };
     const toggleAll = () => {
-        const ids = paginated.map((r) => r.id);
+        const ids = data.map((r) => r.id.toString());
         setSelected((prev) => (prev.length === ids.length ? [] : ids));
     };
-    const handleDelete = () => {
-        if (!window.confirm("선택한 요청을 삭제하시겠습니까?")) return;
-        setRequests((prev) => prev.filter((r) => !selected.includes(r.id)));
-        setSelected([]);
-    };
 
-    const filtered = requests.filter(
-        (r) =>
-            (filter === "전체" || r.status === filter) &&
-            (r.id.includes(search) || r.name.includes(search))
-    );
-    const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
-    const totalPages = Math.ceil(filtered.length / pageSize);
-
+    const handleApprove = async (phoneNumber: string) => {
+        try {
+            const { message, success } = await api.changeStatus({ phoneNumber })
+            toast.success(message)
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong"
+            console.error("Error fetching user lists: ", message)
+        } finally {
+            setRefetch(true)
+        }
+    }
 
     return (
         <Box w="full" px={2} py={4}>
-            <Flex justify="space-between" mb={4} gap={2} wrap="wrap">
+            {/* <Flex justify="space-between" mb={4} gap={2} wrap="wrap">
                 <Stack direction="row" spacing={2}>
                     {
                         ["전체", "대기", "승인", "거절"].map((tab) => (
@@ -133,35 +160,58 @@ export default function Signup() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
-            </Flex>
+            </Flex> */}
 
-            <Box bg={bg} p={4} rounded="xl" shadow="md" overflowX="auto">
-                <Table size="sm">
-                    <Thead bg={headerBg}>
-                        <Tr>
-                            <Th><Checkbox isChecked={selected.length === paginated.length} onChange={toggleAll} /></Th>
-                            <Th>ID</Th>
-                            <Th>이름</Th>
-                            <Th>이메일</Th>
-                            <Th>전화번호</Th>
-                            <Th>계좌정보</Th>
-                            <Th>신청일</Th>
-                            <Th>상태</Th>
-                            <Th>처리</Th>
-                        </Tr>
-                    </Thead>
-                    <Tbody>
-                        {
-                            paginated.map((r) => (
-                                <Tr key={r.id} _hover={{ bg: "gray.50" }}>
-                                    <Td><Checkbox isChecked={selected.includes(r.id)} onChange={() => toggleSelect(r.id)} /></Td>
-                                    <Td>{r.id}</Td>
-                                    <Td>{r.name}</Td>
-                                    <Td>{r.email}</Td>
-                                    <Td>{r.phone}</Td>
-                                    <Td>{r.bank} {r.account} ({r.holder})</Td>
-                                    <Td>{r.date}</Td>
-                                    <Td>
+            {
+                isLoading ? (
+                    <Stack w={"100%"} p={10} justify={"center"} align={"center"} bgColor={"white"} rounded={"xl"}>
+                        <Spinner
+                            thickness='4px'
+                            speed='0.65s'
+                            emptyColor='gray.200'
+                            color='blue.500'
+                            size='xl'
+                        />
+                    </Stack>
+                ) : (
+                    <Box bg={bg} p={4} rounded="xl" shadow="md" overflowX="auto">
+                        <Table size="sm">
+                            <Thead bg={headerBg}>
+                                <Tr>
+                                    <Th><Checkbox isChecked={selected.length === data.length} onChange={toggleAll} /></Th>
+                                    <Th>ID</Th>
+                                    <Th>이름</Th>
+                                    <Th>이메일</Th>
+                                    <Th>전화번호</Th>
+                                    <Th>계좌정보</Th>
+                                    <Th>신청일</Th>
+                                    <Th>상태</Th>
+                                    <Th>처리</Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
+                                {
+                                    data.map(miner => (
+                                        <Tr key={miner.id} _hover={{ bg: "gray.50" }}>
+                                            <Td><Checkbox isChecked={selected.includes(miner.id.toString())} onChange={() => toggleSelect(miner.id.toString())} /></Td>
+                                            <Td>{miner.id}</Td>
+                                            <Td>{miner.name}</Td>
+                                            <Td>준비중입니다</Td>
+                                            <Td>준비중입니다</Td>
+                                            <Td>준비중입니다</Td>
+                                            <Td>준비중입니다</Td>
+                                            <Td>준비중입니다</Td>
+                                            <Td>
+                                                <Stack w={"100%"} direction={"row"} justify={"center"} align={"center"}>
+                                                    <Button size={"sm"} colorScheme="green" variant={"ghost"} onClick={() => handleApprove(miner.phoneNumber)}>승인</Button>
+                                                    <Button size={"sm"} colorScheme="red" variant={"ghost"}>승인</Button>
+                                                </Stack>
+                                            </Td>
+                                            {/* <Td>{miner.email}</Td> */}
+                                            {/* <Td>{miner.phone}</Td> */}
+                                            {/* <Td>{miner.bank} {r.account} ({r.holder})</Td> */}
+                                            {/* <Td>{miner.date}</Td> */}
+                                            {/* <Td>
                                         {r.status}
                                         {
                                             r.handler && (
@@ -187,15 +237,18 @@ export default function Signup() {
                                                 </Stack>
                                             )
                                         }
-                                    </Td>
-                                </Tr>
-                            ))
-                        }
-                    </Tbody>
-                </Table>
-            </Box>
+                                    </Td> */}
+                                        </Tr>
+                                    ))
+                                }
+                            </Tbody>
+                        </Table>
+                    </Box>
+                )
+            }
 
-            <Flex justify="space-between" align="center" mt={4} wrap="wrap" gap={2}>
+
+            {/* <Flex justify="space-between" align="center" mt={4} wrap="wrap" gap={2}>
                 <Button
                     colorScheme="red"
                     size="sm"
@@ -219,7 +272,12 @@ export default function Signup() {
                         ))
                     }
                 </Stack>
-            </Flex>
+            </Flex> */}
+            <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
+                <Button colorScheme="blue" isDisabled={payload.page === 1} onClick={() => setPayload(prev => ({ ...prev, page: prev.page - 1 }))}>Prev</Button>
+                <Text>{payload.page} / {Math.ceil(total / size)}</Text>
+                <Button colorScheme="blue" isDisabled={payload.page === Math.ceil(total / size)} onClick={() => setPayload(prev => ({ ...prev, page: prev.page + 1 }))}>Next</Button>
+            </Stack>
         </Box>
     );
 }

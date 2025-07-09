@@ -38,14 +38,15 @@ model miners {
   hashRate               Float              @default(1)
   referralCode           String             @unique
   password               String             @default("")
+  status                 Boolean            @default(false)
   bitcoin_balance        bitcoin_balance?
   cardano_balance        cardano_balance?
+  coin_logs              coin_logs[]
   ethereum_balance       ethereum_balance?
   ripple_balance         ripple_balance?
   shiba_inu_balance      shiba_inu_balance?
   tron_balance           tron_balance?
   usdt_balance           usdt_balance?
-  coin_logs              coin_logs[]
 }
 
 model bitcoin_balance {
@@ -119,4 +120,6 @@ model coin_logs {
   createdAt DateTime @default(now())
   updatedAt DateTime
   miner     miners   @relation(fields: [minerId], references: [id], onDelete: Cascade)
+
+  @@index([minerId], map: "coin_logs_minerId_fkey")
 }

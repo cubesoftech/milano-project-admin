@@ -58,3 +58,21 @@ export const useUserStore = create<User>(
         setUser: (user: Miners | null) => set({ user })
     })
 )
+
+interface Token {
+    accessToken: string | null;
+    setAccessToken: (token: string | null) => void;
+}
+
+export const useTokenStore = create<Token>()(
+    persist<Token>(
+        (set) => ({
+            accessToken: "",
+            setAccessToken: (token: string | null) => set({ accessToken: token }),
+        }),
+        {
+            name: "token-storage",
+            storage: createJSONStorage(() => localStorage),
+        }
+    )
+);

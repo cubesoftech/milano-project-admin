@@ -8,8 +8,9 @@ import UseToastHooks from "@/hooks/UseToastHooks";
 
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
-import { usePageStore } from "@/utils/storage";
-import axios from "axios";
+import { usePageStore, useTokenStore } from "@/utils/storage";
+
+import { api } from "@/utils/api";
 
 const primary = 'oklch(62.54% 0.18 220)';
 const primaryHover = 'oklch(71.71% 0.123 221)';
@@ -18,6 +19,7 @@ export default function Login() {
     const toast = UseToastHooks()
     const router = useRouter()
     const { setPage } = usePageStore()
+    const { accessToken, setAccessToken } = useTokenStore()
 
     const [payload, setPayload] = useState({
         email: '',
@@ -28,17 +30,25 @@ export default function Login() {
         setPayload({ ...payload, [e.target.name]: e.target.value });
     };
     const handleLogin = async () => {
-        await signIn("credentials", {
-            ...payload,
-        })
-            .then(res => {
-                if (res && res.error) {
-                    toast.error("잘못된 자격 증명");
-                } else {
-                    toast.success("로그인 성공");
-                    setPage("");
-                }
-            })
+        // await signIn("credentials", {
+        //     ...payload,
+        // })
+        //     .then(res => {
+        //         if (res && res.error) {
+        //             toast.error("잘못된 자격 증명");
+        //         } else {
+        //             toast.success("로그인 성공");
+        //             setPage("");
+        //         }
+        //     })
+        try {
+            const { data, message } = await api.login({ phone_number: payload.email, password: payload.password })
+            setAccessToken(data)
+            toast.success(message)
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong"
+            toast.error(message)
+        }
     };
 
     return (

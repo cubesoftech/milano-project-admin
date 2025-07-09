@@ -153,7 +153,29 @@ function NewUserList() {
     const [data, setData] = useState<Miners[]>([]);
     const [total, setTotal] = useState(1);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const [refetch, setRefetch] = useState(false);
     const size = 25
+
+    useEffect(() => {
+        if (refetch) {
+            const fetchUser = async () => {
+                setIsLoading(true)
+                try {
+                    const { data, message, pagination } = await api.miners({})
+                    const { total } = pagination
+                    setData(data)
+                    setTotal(total)
+                } catch (e: any) {
+                    const message = e?.response?.data?.message || "Something went wrong"
+                    console.error("Error fetching user lists: ", message)
+                } finally {
+                    setIsLoading(false)
+                    setRefetch(false)
+                }
+            }
+            fetchUser();
+        }
+    }, [refetch]);
 
     // get users on reload
     useEffect(() => {
@@ -255,13 +277,22 @@ function NewUserList() {
                     maxW="sm"
                     bgColor={"white"}
                 />
-                <Button
-                    colorScheme="red"
-                    isDisabled={selectedUsers.length === 0}
-                    onClick={() => alert("삭제 기능 실행 (예시)")}
-                >
-                    선택 회원 삭제
-                </Button>
+                <Stack direction={"row"} justify={"center"} align={"center"}>
+                    <Button
+                        colorScheme="green"
+                        onClick={() => setRefetch(true)}
+                        isLoading={isLoading}
+                    >
+                        잔액 새로고침
+                    </Button>
+                    <Button
+                        colorScheme="red"
+                        isDisabled={selectedUsers.length === 0}
+                        onClick={() => alert("삭제 기능 실행 (예시)")}
+                    >
+                        선택 회원 삭제
+                    </Button>
+                </Stack>
             </Stack>
 
             {
@@ -404,9 +435,9 @@ function NewUserList() {
 
 
             <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
-                <Button colorScheme="blue" isDisabled={payload.page === 1} onClick={() => setPayload(prev => ({ ...prev, page: prev.page - 1 }))}>Prev</Button>
+                <Button colorScheme="blue" isDisabled={payload.page === 1} isLoading={isLoading} onClick={() => setPayload(prev => ({ ...prev, page: prev.page - 1 }))}>Prev</Button>
                 <Text>{payload.page} / {Math.ceil(total / size)}</Text>
-                <Button colorScheme="blue" isDisabled={payload.page === Math.ceil(total / size)} onClick={() => setPayload(prev => ({ ...prev, page: prev.page + 1 }))}>Next</Button>
+                <Button colorScheme="blue" isDisabled={payload.page === Math.ceil(total / size)} isLoading={isLoading} onClick={() => setPayload(prev => ({ ...prev, page: prev.page + 1 }))}>Next</Button>
             </Stack>
         </Box>
     );

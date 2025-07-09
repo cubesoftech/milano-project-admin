@@ -161,6 +161,15 @@ export default function Signup() {
                     onChange={(e) => setSearch(e.target.value)}
                 />
             </Flex> */}
+            <Stack w={"100%"} direction={"row"} justify={"flex-end"} align={"center"} mb={5}>
+                <Button
+                    colorScheme="green"
+                    onClick={() => setRefetch(true)}
+                    isLoading={isLoading}
+                >
+                    잔액 새로고침
+                </Button>
+            </Stack>
 
             {
                 isLoading ? (
@@ -204,7 +213,7 @@ export default function Signup() {
                                             <Td>
                                                 <Stack w={"100%"} direction={"row"} justify={"center"} align={"center"}>
                                                     <Button size={"sm"} colorScheme="green" variant={"ghost"} onClick={() => handleApprove(miner.phoneNumber)}>승인</Button>
-                                                    <Button size={"sm"} colorScheme="red" variant={"ghost"}>승인</Button>
+                                                    <Button size={"sm"} colorScheme="red" variant={"ghost"}>거절</Button>
                                                 </Stack>
                                             </Td>
                                             {/* <Td>{miner.email}</Td> */}
@@ -274,9 +283,9 @@ export default function Signup() {
                 </Stack>
             </Flex> */}
             <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
-                <Button colorScheme="blue" isDisabled={payload.page === 1} onClick={() => setPayload(prev => ({ ...prev, page: prev.page - 1 }))}>Prev</Button>
+                <Button colorScheme="blue" isDisabled={payload.page === 1} isLoading={isLoading} onClick={() => setPayload(prev => ({ ...prev, page: prev.page - 1 }))}>Prev</Button>
                 <Text>{payload.page} / {Math.ceil(total / size)}</Text>
-                <Button colorScheme="blue" isDisabled={payload.page === Math.ceil(total / size)} onClick={() => setPayload(prev => ({ ...prev, page: prev.page + 1 }))}>Next</Button>
+                <Button colorScheme="blue" isDisabled={payload.page === Math.ceil(total / size)} isLoading={isLoading} onClick={() => setPayload(prev => ({ ...prev, page: prev.page + 1 }))}>Next</Button>
             </Stack>
         </Box>
     );

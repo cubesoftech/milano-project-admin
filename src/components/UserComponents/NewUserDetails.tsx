@@ -77,14 +77,14 @@ function NewUserDetails() {
                     <Stack align={"flex-end"} gap={1}>
                         <Stack w={"100%"} direction={"row"} justify={"flex-start"} align={"center"}>
                             <Text as={"strong"} whiteSpace={"nowrap"}>자유형 설정: </Text> {/* tunay */}
-                            <Input onChange={(e) => setEarnings(Number(e.target.value))} />
+                            <Input type="number" placeholder="%" onChange={(e) => setEarnings(Number(e.target.value))} />
                         </Stack>
                         <Button w={"fit-content"} colorScheme="green" onClick={handleUpdateEarnings} isLoading={isLoading} isDisabled={!(user.tronAddress || user.ethAddress)}>업데이트</Button>
                     </Stack>
                     <Stack align={"flex-end"} gap={1} mt={2}>
                         <Stack w={"100%"} direction={"row"} justify={"flex-start"} align={"center"}>
                             <Text as={"strong"} whiteSpace={"nowrap"}>고정형 설정: </Text> {/* fake */}
-                            <Input onChange={(e) => setEarnings2(Number(e.target.value))} />
+                            <Input type="number" placeholder="%" onChange={(e) => setEarnings2(Number(e.target.value))} />
                         </Stack>
                         <Button w={"fit-content"} colorScheme="green" onClick={handleUpdateEarnings2} isLoading={isLoading2} isDisabled={!(user.tronAddress || user.ethAddress)}>업데이트</Button>
                     </Stack>

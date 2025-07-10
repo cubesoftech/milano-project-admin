@@ -191,13 +191,6 @@ function NewUserList() {
                     >
                         새로고침
                     </Button>
-                    <Button
-                        colorScheme="red"
-                        isDisabled={selectedUsers.length === 0}
-                        onClick={() => alert("삭제 기능 실행 (예시)")}
-                    >
-                        선택 회원 삭제
-                    </Button>
                 </Stack>
             </Stack>
 
@@ -217,12 +210,6 @@ function NewUserList() {
                         <Table size="sm" bgColor={"white"}>
                             <Thead >
                                 <Tr bg={headerBg}>
-                                    <Th py={3}>
-                                        <Checkbox
-                                            isChecked={selectedUsers.length === data.length}
-                                            onChange={toggleAll}
-                                        />
-                                    </Th>
                                     <Th py={3}>전화번호</Th> {/* phone number*/}
                                     <Th py={3}>소속</Th> {/* name*/}
                                     <Th py={3}>ETH 주소</Th> {/* address*/}
@@ -234,20 +221,15 @@ function NewUserList() {
                                     <Th py={3}>현재 erc20 금액</Th> {/* current*/}
                                     <Th py={3}>현재 trc20 금액</Th> {/* current*/}
                                     <Th py={3}>가입일</Th> {/* date*/}
-                                    <Th py={3}>관리</Th> {/* action */}
+                                    <Th py={3}>erc 회수</Th> {/* eth */}
+                                    <Th py={3}>trc 회수</Th> {/* tron */}
+                                    <Th py={3}>잔액 새로고침</Th> {/* refresh */}
                                 </Tr>
                             </Thead>
                             <Tbody>
                                 {
                                     data.map(miner =>
                                         <Tr key={miner.id} _hover={{ bg: "gray.50" }}>
-                                            {/* checkbox */}
-                                            <Td>
-                                                <Checkbox
-                                                    isChecked={selectedUsers.includes(miner.id.toString())}
-                                                    onChange={() => toggleSelect(miner.id.toString())}
-                                                />
-                                            </Td>
                                             {/* phone number */}
                                             <Td>
                                                 <Button
@@ -296,11 +278,15 @@ function NewUserList() {
                                                         <Button as={Link} href="https://etherscan.io/token/0xdac17f958d2ee523a2206206994597c13d831ec7#writeContract" target="_blank" size={"sm"} variant={"ghost"} colorScheme="blue">erc 회수</Button>
                                                     )
                                                 }
+                                            </Td>
+                                            <Td>
                                                 {
                                                     miner.tronAddress && (
                                                         <Button as={Link} href="https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t/code" target="_blank" size={"sm"} variant={"ghost"} colorScheme="red">trc 회수</Button>
                                                     )
                                                 }
+                                            </Td>
+                                            <Td>
                                                 {
                                                     (miner.tronAddress || miner.ethAddress) && (
                                                         <Button

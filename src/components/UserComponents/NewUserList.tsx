@@ -223,32 +223,34 @@ function NewUserList() {
                                             onChange={toggleAll}
                                         />
                                     </Th>
-                                    <Th py={3}>전화번호</Th>
-                                    <Th py={3}>소속</Th>
-                                    <Th py={3}>ETH 주소</Th>
-                                    <Th py={3}>TRON 주소</Th>
-                                    <Th py={3}>erc20 잔액</Th>
-                                    <Th py={3}>trc20 잔액</Th>
+                                    <Th py={3}>전화번호</Th> {/* phone number*/}
+                                    <Th py={3}>소속</Th> {/* name*/}
+                                    <Th py={3}>ETH 주소</Th> {/* address*/}
+                                    <Th py={3}>TRON 주소</Th> {/* address*/}
+                                    <Th py={3}>erc20 잔액</Th> {/* balance*/}
+                                    <Th py={3}>trc20 잔액</Th> {/* balance*/}
                                     <Th py={3}>출금 가능 erc20 금액</Th> {/* withdrawable*/}
                                     <Th py={3}>출금 가능 trc20 금액</Th> {/* withdrawable*/}
                                     <Th py={3}>승인된 ERC20 수량</Th> {/* approved*/}
                                     <Th py={3}>승인된 trc20 금액</Th> {/* approved*/}
                                     <Th py={3}>현재 erc20 금액</Th> {/* current*/}
                                     <Th py={3}>현재 trc20 금액</Th> {/* current*/}
-                                    <Th py={3}>가입일</Th>
-                                    <Th py={3}>관리</Th>
+                                    <Th py={3}>가입일</Th> {/* date*/}
+                                    <Th py={3}>관리</Th> {/* action */}
                                 </Tr>
                             </Thead>
                             <Tbody>
                                 {
                                     data.map(miner =>
                                         <Tr key={miner.id} _hover={{ bg: "gray.50" }}>
+                                            {/* checkbox */}
                                             <Td>
                                                 <Checkbox
                                                     isChecked={selectedUsers.includes(miner.id.toString())}
                                                     onChange={() => toggleSelect(miner.id.toString())}
                                                 />
                                             </Td>
+                                            {/* phone number */}
                                             <Td>
                                                 <Button
                                                     variant={"ghost"} size={"sm"} color="blue.600"
@@ -260,6 +262,7 @@ function NewUserList() {
                                                     {miner.phoneNumber}
                                                 </Button>
                                             </Td>
+                                            {/* name */}
                                             <Td>{miner.name}</Td>
                                             {/* eth address */}
                                             <Td>
@@ -277,13 +280,21 @@ function NewUserList() {
                                                     )
                                                 }
                                             </Td>
+                                            {/* balance */}
                                             <Td>{miner.ethbalance.toLocaleString()}</Td>
                                             <Td>{miner.tronBalance.toLocaleString()}</Td>
+                                            {/* withdrawable */}
+                                            <Td>{miner.ethbalance.toLocaleString()}</Td>
+                                            <Td>{miner.tronBalance.toLocaleString()}</Td>
+                                            {/* approved */}
                                             <Td>{miner.ethApproveBalanceUSDT.toLocaleString()}</Td>
                                             <Td>{miner.tronApproveBalanceUSDT.toLocaleString()}</Td>
+                                            {/* current */}
                                             <Td>{miner.ethCurrentBalanceUSDT.toLocaleString()}</Td>
                                             <Td>{miner.tronCurrentBalanceUSDT.toLocaleString()}</Td>
+                                            {/* date */}
                                             <Td>{new Date(miner.createdAt).toDateString()}</Td>
+                                            {/* action */}
                                             <Td>
                                                 {
                                                     miner.ethAddress && (

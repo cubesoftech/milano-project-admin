@@ -520,7 +520,10 @@ function NewDashboard() {
                 onClick={() => handleRedirect(path)}
             >
                 <Heading size={"md"}>{title}</Heading>
-                <Heading size={"3xl"} color={"blue.900"}>{value}</Heading>
+                <Stack direction={"row"} justify={"flex-start"} align={"flex-end"} px={5} gap={0}>
+                    <Heading size={"2xl"} color={"blue.900"}>{value}</Heading>
+                    <Heading size={"lg"} color={"blue.900"}>{title === "총 입금액" && " USDT"}</Heading>
+                </Stack>
             </Stack>
         ))
     }, [stats])

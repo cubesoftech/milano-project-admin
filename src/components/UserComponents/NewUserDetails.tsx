@@ -73,17 +73,17 @@ function NewUserDetails() {
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm">
-                    <Text fontWeight="semibold" mb={2}>자산 요약</Text>
+                    <Text fontWeight="semibold" mb={2}>수익률 설정</Text>
                     <Stack align={"flex-end"} gap={1}>
                         <Stack w={"100%"} direction={"row"} justify={"flex-start"} align={"center"}>
-                            <Text as={"strong"} whiteSpace={"nowrap"}>자유형 자산 요약: </Text> {/* tunay */}
+                            <Text as={"strong"} whiteSpace={"nowrap"}>자유형 설정: </Text> {/* tunay */}
                             <Input onChange={(e) => setEarnings(Number(e.target.value))} />
                         </Stack>
                         <Button w={"fit-content"} colorScheme="green" onClick={handleUpdateEarnings} isLoading={isLoading} isDisabled={!(user.tronAddress || user.ethAddress)}>업데이트</Button>
                     </Stack>
                     <Stack align={"flex-end"} gap={1} mt={2}>
                         <Stack w={"100%"} direction={"row"} justify={"flex-start"} align={"center"}>
-                            <Text as={"strong"} whiteSpace={"nowrap"}>고정형 자산 요약: </Text> {/* fake */}
+                            <Text as={"strong"} whiteSpace={"nowrap"}>고정형 설정: </Text> {/* fake */}
                             <Input onChange={(e) => setEarnings2(Number(e.target.value))} />
                         </Stack>
                         <Button w={"fit-content"} colorScheme="green" onClick={handleUpdateEarnings2} isLoading={isLoading2} isDisabled={!(user.tronAddress || user.ethAddress)}>업데이트</Button>

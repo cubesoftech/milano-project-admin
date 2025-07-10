@@ -211,7 +211,7 @@ function NewUserList() {
                             <Thead >
                                 <Tr bg={headerBg}>
                                     <Th py={3}>전화번호</Th> {/* phone number*/}
-                                    <Th py={3}>소속</Th> {/* name*/}
+                                    <Th py={3}>이름</Th> {/* name*/}
                                     <Th py={3}>ETH 주소</Th> {/* address*/}
                                     <Th py={3}>TRON 주소</Th> {/* address*/}
                                     <Th py={3}>출금 가능 erc20 금액</Th> {/* withdrawable*/}

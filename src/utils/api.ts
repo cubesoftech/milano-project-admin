@@ -79,6 +79,14 @@ class API {
             throw err
         }
     }
+    refreshUser = async (payload: { phone_number?: string }) => {
+        try {
+            const { data } = await axiosInstance.post('/refresh', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
 }
 
 export const api = new API()

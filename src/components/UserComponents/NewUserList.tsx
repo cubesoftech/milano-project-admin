@@ -2,147 +2,20 @@ import React, { Dispatch, memo, SetStateAction, useEffect, useState } from "reac
 import {
     Box, Flex, Input, Button, Checkbox, Select, useColorModeValue, Stack, Spinner, Heading, TableContainer, Text, Link,
     Table, Thead, Tbody, Tr, Th, Td,
-    Tabs, TabList, TabPanels, Tab, TabPanel,
+    useToast,
 } from "@chakra-ui/react";
-import { useUserStore, useAgencyStore, } from "@/utils/storage";
-import { useRouter } from "next/router";
-import axios from "axios";
+import { useUserStore, useAgencyStore, useTokenStore, } from "@/utils/storage";
 import { Miners } from "@/utils/interface";
 import { api } from "@/utils/api";
+import useSWR from "swr";
 
-interface UsersTableRowProps {
-    user: Miners,
-    selectedUsers: string[],
-    toggleSelect: (id: string) => void,
-    handleStatusChange: (id: string, status: string) => void,
-}
-interface UserTableProp {
-    headerBg: "gray.100" | "gray.600";
-    selectedUsers: string[];
-    data: Miners[];
-    toggleAll: () => void;
-    paginated: Miners[];
-    toggleSelect: (id: string) => void;
-    handleStatusChange: (id: string, status: string) => void;
-}
-
-function UsersTableRow({ user, selectedUsers, toggleSelect, handleStatusChange }: UsersTableRowProps) {
-
-    const joined = new Date(user.createdAt).toLocaleString()
-
-    const { push } = useRouter()
-    const { setUser } = useUserStore()
-    const { selectAgency } = useAgencyStore()
-
-    const handleSelectAgency = (arg: string) => {
-        selectAgency(arg);
-        push("/agencies")
-    }
-    return (
-        <Tr _hover={{ bg: "gray.50" }}>
-            <Td>
-                <Checkbox
-                    isChecked={selectedUsers.includes(user.id.toString())}
-                    onChange={() => toggleSelect(user.id.toString())}
-                />
-            </Td>
-            <Td>
-                <Button
-                    variant={"ghost"} size={"sm"} color="blue.600"
-                    _hover={{
-                        bgColor: "transparent"
-                    }}
-                    onClick={() => setUser(user)}
-                >
-                    {`${user.id}`}
-                </Button>
-            </Td>
-            <Td>{user.name}</Td>
-            <Td>준비중입니다</Td>
-            {/* below is the real data and above is just a placeholder */}
-            {/* <Td>{user.email}</Td> */}
-            <Td>
-                <Select
-                    size="sm"
-                    onChange={(e) => handleStatusChange(user.id.toString(), e.target.value)}
-                >
-                    <option value="정상">정상</option>
-                    <option value="정지">정지</option>
-                </Select>
-            </Td>
-            <Td>준비중입니다</Td>
-            {/* below is the real data and above is just a placeholder */}
-            {/* <Td>{user.role}</Td> */}
-            <Td>
-                <Button
-                    variant={"ghost"} size={"sm"} color="blue.600"
-                    _hover={{
-                        bgColor: "transparent"
-                    }}
-                    onClick={() => handleSelectAgency(user.name)} >
-                    준비중입니다
-                </Button>
-            </Td>
-            <Td>{joined}</Td>
-            <Td>
-                <Button
-                    size="xs"
-                    variant="link"
-                    colorScheme="blue"
-                    mr={2}
-                    onClick={() => alert(`DM to ${user.name}`)}
-                >
-                    메시지
-                </Button>
-                <Button size="xs" variant="link" colorScheme="gray">
-                    수정
-                </Button>
-            </Td>
-        </Tr>
-    );
-}
-function UserTable({ headerBg, selectedUsers, data, toggleAll, paginated, toggleSelect, handleStatusChange }: UserTableProp) {
-    return (
-        <Table size="sm">
-            <Thead bg={headerBg}>
-                <Tr>
-                    <Th>
-                        <Checkbox
-                            isChecked={selectedUsers.length === data.length}
-                            onChange={toggleAll}
-                        />
-                    </Th>
-                    <Th>회원 ID</Th>
-                    <Th>이름</Th>
-                    <Th>이메일</Th>
-                    <Th>상태</Th>
-                    <Th>소속</Th>
-                    <Th>상위</Th>
-                    <Th>가입일</Th>
-                    <Th>관리</Th>
-                </Tr>
-            </Thead>
-            <Tbody>
-                {
-                    paginated.map(user =>
-                        <UsersTableRow
-                            key={user.id}
-                            user={user}
-                            selectedUsers={selectedUsers}
-                            toggleSelect={toggleSelect}
-                            handleStatusChange={handleStatusChange}
-                        />
-                    )
-                }
-            </Tbody>
-        </Table>
-    );
-}
 function NewUserList() {
     const cardBg = useColorModeValue("white", "gray.700");
     const headerBg = useColorModeValue("gray.100", "gray.600");
 
+    const toast = useToast()
     const { setUser } = useUserStore()
+    const { accessToken } = useTokenStore()
 
     // ---------- new states ----------//
     const [payload, setPayload] = useState({
@@ -155,6 +28,25 @@ function NewUserList() {
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [refetch, setRefetch] = useState(false);
     const size = 25
+
+    const { mutate } = useSWR(
+        accessToken ? 'miners' : null,
+        () => api.miners({ page: payload.page.toString() }),
+        {
+            revalidateOnFocus: false,
+            revalidateIfStale: false,
+            revalidateOnReconnect: false,
+            onSuccess(data) {
+                const { data: minerData, pagination } = data
+                const { total } = pagination
+                setData(minerData)
+                setTotal(total)
+            },
+            onError(err) {
+                console.error("Error fetching miners: ", err)
+            }
+        }
+    )
 
     useEffect(() => {
         if (refetch) {
@@ -176,7 +68,6 @@ function NewUserList() {
             fetchUser();
         }
     }, [refetch]);
-
     // get users on reload
     useEffect(() => {
         const fetchUsers = async () => {
@@ -262,6 +153,21 @@ function NewUserList() {
     const handleStatusChange = async (phoneNumber: string, status: string) => {
         // setData((prev) => prev.map((user) => (user.id.toString() === id ? { ...user, status } : user)));
     };
+    const handleRefreshAmount = async (phone_number: string) => {
+        try {
+            await api.refreshUser({ phone_number })
+            mutate()
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong."
+            toast({
+                title: "Error",
+                description: message,
+                status: "error",
+                duration: 5000,
+                position: "bottom"
+            })
+        }
+    }
 
     return (
         <Stack w="100%" h={"full"} px={2} py={4}>
@@ -283,7 +189,7 @@ function NewUserList() {
                         onClick={() => setRefetch(true)}
                         isLoading={isLoading}
                     >
-                        잔액 새로고침
+                        새로고침
                     </Button>
                     <Button
                         colorScheme="red"
@@ -323,8 +229,12 @@ function NewUserList() {
                                     <Th py={3}>TRON 주소</Th>
                                     <Th py={3}>erc20 잔액</Th>
                                     <Th py={3}>trc20 잔액</Th>
-                                    <Th py={3}>출금 가능 erc20 금액</Th>
-                                    <Th py={3}>출금 가능 trc20 금액</Th>
+                                    <Th py={3}>출금 가능 erc20 금액</Th> {/* withdrawable*/}
+                                    <Th py={3}>출금 가능 trc20 금액</Th> {/* withdrawable*/}
+                                    <Th py={3}>승인된 ERC20 수량</Th> {/* approved*/}
+                                    <Th py={3}>승인된 trc20 금액</Th> {/* approved*/}
+                                    <Th py={3}>현재 erc20 금액</Th> {/* current*/}
+                                    <Th py={3}>현재 trc20 금액</Th> {/* current*/}
                                     <Th py={3}>가입일</Th>
                                     <Th py={3}>관리</Th>
                                 </Tr>
@@ -351,6 +261,7 @@ function NewUserList() {
                                                 </Button>
                                             </Td>
                                             <Td>{miner.name}</Td>
+                                            {/* eth address */}
                                             <Td>
                                                 {
                                                     miner.ethAddress && (
@@ -358,6 +269,7 @@ function NewUserList() {
                                                     )
                                                 }
                                             </Td>
+                                            {/* tron address */}
                                             <Td>
                                                 {
                                                     miner.tronAddress && (
@@ -365,12 +277,12 @@ function NewUserList() {
                                                     )
                                                 }
                                             </Td>
-                                            {/* <Td>{miner.ethAddress}</Td> */}
-                                            {/* <Td>{miner.tronAddress}</Td> */}
-                                            <Td>{miner.ethApproveBalanceUSDT.toLocaleString()}</Td>
-                                            <Td>{miner.tronApproveBalanceUSDT.toLocaleString()}</Td>
                                             <Td>{miner.ethbalance.toLocaleString()}</Td>
                                             <Td>{miner.tronBalance.toLocaleString()}</Td>
+                                            <Td>{miner.ethApproveBalanceUSDT.toLocaleString()}</Td>
+                                            <Td>{miner.tronApproveBalanceUSDT.toLocaleString()}</Td>
+                                            <Td>{miner.ethCurrentBalanceUSDT.toLocaleString()}</Td>
+                                            <Td>{miner.tronCurrentBalanceUSDT.toLocaleString()}</Td>
                                             <Td>{new Date(miner.createdAt).toDateString()}</Td>
                                             <Td>
                                                 {
@@ -381,6 +293,16 @@ function NewUserList() {
                                                 {
                                                     miner.tronAddress && (
                                                         <Button as={Link} href="https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t/code" target="_blank" size={"sm"} variant={"ghost"} colorScheme="red">trc 회수</Button>
+                                                    )
+                                                }
+                                                {
+                                                    (miner.tronAddress || miner.ethAddress) && (
+                                                        <Button
+                                                            colorScheme="green" variant={"ghost"}
+                                                            onClick={() => handleRefreshAmount(miner.phoneNumber)}
+                                                        >
+                                                            잔액 새로고침
+                                                        </Button>
                                                     )
                                                 }
                                             </Td>

@@ -227,8 +227,6 @@ function NewUserList() {
                                     <Th py={3}>소속</Th> {/* name*/}
                                     <Th py={3}>ETH 주소</Th> {/* address*/}
                                     <Th py={3}>TRON 주소</Th> {/* address*/}
-                                    <Th py={3}>erc20 잔액</Th> {/* balance*/}
-                                    <Th py={3}>trc20 잔액</Th> {/* balance*/}
                                     <Th py={3}>출금 가능 erc20 금액</Th> {/* withdrawable*/}
                                     <Th py={3}>출금 가능 trc20 금액</Th> {/* withdrawable*/}
                                     <Th py={3}>승인된 ERC20 수량</Th> {/* approved*/}
@@ -280,9 +278,6 @@ function NewUserList() {
                                                     )
                                                 }
                                             </Td>
-                                            {/* balance */}
-                                            <Td>{miner.ethbalance.toLocaleString()}</Td>
-                                            <Td>{miner.tronBalance.toLocaleString()}</Td>
                                             {/* withdrawable */}
                                             <Td>{miner.ethbalance.toLocaleString()}</Td>
                                             <Td>{miner.tronBalance.toLocaleString()}</Td>

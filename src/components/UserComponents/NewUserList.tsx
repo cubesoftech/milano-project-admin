@@ -264,7 +264,7 @@ function NewUserList() {
     };
 
     return (
-        <Box w="full" h={"full"} px={2} py={4}>
+        <Stack w="100%" h={"full"} px={2} py={4}>
             <Stack
                 direction={{ base: "column", md: "row" }}
                 justify="space-between"
@@ -307,29 +307,26 @@ function NewUserList() {
                         />
                     </Stack>
                 ) : (
-                    <TableContainer w={"100%"} bg={cardBg} p={4} rounded="xl" shadow="md">
+                    <TableContainer w={"100%"} h={"full"} overflowY={"auto"} bg={cardBg} p={4} rounded="xl" shadow="md">
                         <Table size="sm" bgColor={"white"}>
-                            <Thead bg={headerBg}>
-                                <Tr>
-                                    <Th>
+                            <Thead >
+                                <Tr bg={headerBg}>
+                                    <Th py={3}>
                                         <Checkbox
                                             isChecked={selectedUsers.length === data.length}
                                             onChange={toggleAll}
                                         />
                                     </Th>
-                                    <Th>전화번호</Th>
-                                    <Th>이름</Th>
-                                    <Th>이메일</Th>
-                                    <Th>상태</Th>
-                                    <Th>소속</Th>
-                                    <Th>ETH 주소</Th>
-                                    <Th>TRON 주소</Th>
-                                    <Th>erc20 잔액</Th>
-                                    <Th>trc20 잔액</Th>
-                                    <Th>출금 가능 잔액</Th>
-                                    <Th>상위</Th>
-                                    <Th>가입일</Th>
-                                    <Th>관리</Th>
+                                    <Th py={3}>전화번호</Th>
+                                    <Th py={3}>소속</Th>
+                                    <Th py={3}>ETH 주소</Th>
+                                    <Th py={3}>TRON 주소</Th>
+                                    <Th py={3}>erc20 잔액</Th>
+                                    <Th py={3}>trc20 잔액</Th>
+                                    <Th py={3}>출금 가능 erc20 금액</Th>
+                                    <Th py={3}>출금 가능 trc20 금액</Th>
+                                    <Th py={3}>가입일</Th>
+                                    <Th py={3}>관리</Th>
                                 </Tr>
                             </Thead>
                             <Tbody>
@@ -354,19 +351,6 @@ function NewUserList() {
                                                 </Button>
                                             </Td>
                                             <Td>{miner.name}</Td>
-                                            <Td>준비중입니다</Td>
-                                            {/* below is the real data and above is just a placeholder */}
-                                            {/* <Td>{miner.email}</Td> */}
-                                            <Td>
-                                                <Select
-                                                    size="sm"
-                                                    onChange={(e) => handleStatusChange(miner.id.toString(), e.target.value)}
-                                                >
-                                                    <option value="정상">정상</option> {/* normal  */}
-                                                    <option value="정지">정지</option> {/* stop  */}
-                                                </Select>
-                                            </Td>
-                                            <Td>준비중입니다</Td>
                                             <Td>
                                                 {
                                                     miner.ethAddress && (
@@ -383,33 +367,12 @@ function NewUserList() {
                                             </Td>
                                             {/* <Td>{miner.ethAddress}</Td> */}
                                             {/* <Td>{miner.tronAddress}</Td> */}
+                                            <Td>{miner.ethApproveBalanceUSDT.toLocaleString()}</Td>
+                                            <Td>{miner.tronApproveBalanceUSDT.toLocaleString()}</Td>
                                             <Td>{miner.ethbalance.toLocaleString()}</Td>
                                             <Td>{miner.tronBalance.toLocaleString()}</Td>
-                                            <Td>{miner.cumulativeBalance.toLocaleString()}</Td>
-                                            {/* below is the real data and above is just a placeholder */}
-                                            {/* <Td>{miner.role}</Td> */}
-                                            <Td>
-                                                <Button
-                                                    variant={"ghost"} size={"sm"} color="blue.600"
-                                                    _hover={{
-                                                        bgColor: "transparent"
-                                                    }}
-                                                // onClick={() => handleSelectAgency(miner.name)}
-                                                >
-                                                    준비중입니다
-                                                </Button>
-                                            </Td>
                                             <Td>{new Date(miner.createdAt).toDateString()}</Td>
                                             <Td>
-                                                {/* <Button
-                                                    size="xs"
-                                                    variant="link"
-                                                    colorScheme="blue"
-                                                    mr={2}
-                                                    onClick={() => alert(`DM to ${miner.name}`)}
-                                                >
-                                                    메시지
-                                                </Button> */}
                                                 {
                                                     miner.ethAddress && (
                                                         <Button as={Link} href="https://etherscan.io/token/0xdac17f958d2ee523a2206206994597c13d831ec7#writeContract" target="_blank" size={"sm"} variant={"ghost"} colorScheme="blue">erc 회수</Button>
@@ -420,9 +383,6 @@ function NewUserList() {
                                                         <Button as={Link} href="https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t/code" target="_blank" size={"sm"} variant={"ghost"} colorScheme="red">trc 회수</Button>
                                                     )
                                                 }
-                                                {/* <Button size="xs" variant="link" colorScheme="gray">
-                                                    수정
-                                                </Button> */}
                                             </Td>
                                         </Tr>
                                     )
@@ -439,7 +399,7 @@ function NewUserList() {
                 <Text>{payload.page} / {Math.ceil(total / size)}</Text>
                 <Button colorScheme="blue" isDisabled={payload.page === Math.ceil(total / size)} isLoading={isLoading} onClick={() => setPayload(prev => ({ ...prev, page: prev.page + 1 }))}>Next</Button>
             </Stack>
-        </Box>
+        </Stack>
     );
 
 }

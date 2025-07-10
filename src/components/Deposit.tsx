@@ -1,102 +1,73 @@
 "use client";
-
 import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
 import {
-    Box, Button, Checkbox, Flex, Select, Stack, useColorModeValue, Input,
-    Table, Tbody, Td, Th, Thead, Tr,
+    useToast, useColorModeValue,
+    Box, Button, Flex, Stack, Spinner, Link, Text,
+    Input, Select, Checkbox,
+    TableContainer, Table, Tbody, Td, Th, Thead, Tr,
 } from "@chakra-ui/react";
-import { useTitleStore } from "@/utils/storage";
+import { Miners } from "@/utils/interface";
+import { useTitleStore, useTokenStore, } from "@/utils/storage";
+import { api } from "@/utils/api";
+import UseToastHooks from "@/hooks/UseToastHooks";
+import useSWR, { KeyedMutator } from "swr";
 
-interface Deposit {
-    id: string;
-    name: string;
-    amount: string;
-    bank: string;
-    account: string;
-    holder: string;
-    status: string;
-    requestedAt: string;
-    route: string;
-    userMemo: string;
-    adminMemo: string;
-    handler: string;
-    handledAt: string;
-}
-interface DepositTableRowProps {
-    r: Deposit;
-    selected: string[];
-    toggleSelect: (id: string) => void;
-    setRequests: Dispatch<SetStateAction<Deposit[]>>;
-    updateStatus: (id: string, status: string) => void;
+type LogStatus = "PENDING" | "COMPLETED" | "DENIED";
+
+export interface Log {
+    id: number;
+    phoneNumberMiner: string;
+    amount: number;
+    coin: string;
+    status: LogStatus;
+    createdAt: string;
+    updatedAt: string;
+    miners: Miners
 }
 
-function DepositTableRow({ r, selected, toggleSelect, setRequests, updateStatus }: DepositTableRowProps) {
+function TableRow({ miner, mutate }: { miner: Log, mutate: KeyedMutator<any> }) {
+
+    const { error, success } = UseToastHooks()
+    const [status, setStatus] = useState<LogStatus>(miner.status);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const status_: Record<LogStatus, string> = {
+        COMPLETED: "승인됨",
+        PENDING: "대기 중",
+        DENIED: "거절됨",
+    }
+
+    const handleUpdateStatus = async () => {
+        if (status === "PENDING") return;
+        setIsLoading(true)
+        try {
+            await api.approveDeposit({ depositId: miner.id, status })
+            mutate()
+            success("Status updated")
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong"
+            error(message)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
-        <Tr key={r.id} _hover={{ bg: "gray.50" }}>
+        <Tr _hover={{ bg: "gray.50" }}>
+            <Td>{miner.phoneNumberMiner}</Td>
+            <Td>{miner.miners.name}</Td>
+            <Td>{miner.coin}</Td>
+            <Td>{miner.amount}</Td>
             <Td>
-                <Checkbox isChecked={selected.includes(r.id)} onChange={() => toggleSelect(r.id)} />
-            </Td>
-            <Td>{r.id}</Td>
-            <Td>{r.name}</Td>
-            <Td>{r.amount}</Td>
-            <Td>
-                {r.bank} {r.account} ({r.holder})
-            </Td>
-            <Td whiteSpace="nowrap">{r.requestedAt}</Td>
-            <Td>{r.route}</Td>
-            <Td>{r.userMemo}</Td>
-            <Td>
-                {
-                    r.adminMemo || (
-                        <Button
-                            size="xs"
-                            variant="link"
-                            colorScheme="gray"
-                            onClick={() => {
-                                const memo = prompt("관리자 메모 입력", r.adminMemo || "");
-                                if (memo !== null) {
-                                    setRequests((prev) =>
-                                        prev.map((req) => (req.id === r.id ? { ...req, adminMemo: memo } : req))
-                                    );
-                                }
-                            }}
-                        >
-                            메모 입력
-                        </Button>
-                    )
-                }
-            </Td>
-            <Td>
-                {r.status}
-                {
-                    r.handler && (
-                        <Box as="span" fontSize="xs" color="gray.500">
-                            {' '} (by {r.handler} @ {r.handledAt})
-                        </Box>
-                    )
-                }
-                <Select
-                    size="xs"
-                    mt={1}
-                    value={r.status}
-                    onChange={(e) => updateStatus(r.id, e.target.value)}
-                >
-                    <option value="대기">대기</option>
-                    <option value="완료">완료</option>
-                    <option value="보류">보류</option>
-                    <option value="취소">취소</option>
+                <Select defaultValue={miner.status} onChange={(e) => setStatus(e.target.value as LogStatus)} isDisabled={miner.status !== "PENDING"}>
+                    <option value="COMPLETED">{status_["COMPLETED"]}</option>
+                    <option value="PENDING">{status_["PENDING"]}</option>
+                    <option value="DENIED">{status_["DENIED"]}</option>
                 </Select>
             </Td>
+            <Td>{new Date(miner.createdAt).toLocaleString()}</Td>
             <Td>
-                {
-                    r.status === "대기" && (
-                        <Stack direction="row" spacing={1}>
-                            <Button size="xs" colorScheme="blue" variant="link" onClick={() => updateStatus(r.id, "완료")}>입금완료</Button>
-                            <Button size="xs" colorScheme="yellow" variant="link" onClick={() => updateStatus(r.id, "보류")}>보류</Button>
-                            <Button size="xs" colorScheme="red" variant="link" onClick={() => updateStatus(r.id, "취소")}>취소</Button>
-                        </Stack>
-                    )
-                }
+                <Button colorScheme="green" onClick={handleUpdateStatus} isLoading={isLoading} isDisabled={miner.status !== "PENDING"}>상태 업데이트</Button>
             </Td>
         </Tr>
     );
@@ -106,139 +77,208 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
     const cardBg = useColorModeValue("white", "gray.700");
     const headerBg = useColorModeValue("gray.100", "gray.600");
 
-    const dummyDeposits = Array.from({ length: 22 }, (_, i): Deposit => ({
-        id: `D${(i + 1).toString().padStart(3, "0")}`,
-        name: `회원${i + 1}`,
-        amount: (100000 * (i + 1)).toLocaleString() + "원",
-        bank: i % 2 === 0 ? "국민은행" : "신한은행",
-        account: `110-${(100000000 + i).toString().slice(-8)}`,
-        holder: `회원${i + 1}`,
-        status: "대기",
-        requestedAt: `2024-06-${(10 + (i % 20)).toString().padStart(2, "0")} 12:${(i % 60)
-            .toString()
-            .padStart(2, "0")}`,
-        route: ["가상계좌", "토스", "무통장"][i % 3],
-        userMemo: `입금 관련 메모${i + 1}`,
-        adminMemo: "",
-        handler: "",
-        handledAt: "",
-    }));
-
+    const { accessToken } = useTokenStore()
     const { setTItle } = useTitleStore()
 
-    const [requests, setRequests] = useState(dummyDeposits);
-    const [selected, setSelected] = useState<string[]>([]);
-    const [page, setPage] = useState(1);
-    const [search, setSearch] = useState("");
-    const pageSize = 10; // match Signup page size
+    // ---------- new states ----------//
+    const [payload, setPayload] = useState({
+        search: "",
+        page: 1
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [data, setData] = useState<Log[]>([]);
+    const [total, setTotal] = useState(1);
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const [refetch, setRefetch] = useState(false);
+    const size = 25
+
+    const { mutate } = useSWR(
+        accessToken ? 'miners' : null,
+        () => api.depositLog({ page: payload.page.toString() }),
+        {
+            revalidateOnFocus: false,
+            revalidateIfStale: false,
+            revalidateOnReconnect: false,
+            onSuccess(data) {
+                const { data: minerData, pagination } = data
+                const { total } = pagination
+                setData(minerData)
+                setTotal(total)
+            },
+            onError(err) {
+                console.error("Error fetching miners: ", err)
+            }
+        }
+    )
 
     useEffect(() => {
-        setTItle(type === "deposit" ? "입금신청 관리" : "출금신청 관리")
+        setTItle("입금 / 출금 요청")
     }, []);
 
-    const updateStatus = (id: string, status: string) => {
-        const memo = prompt(`${status} 처리 메모를 입력해주세요`) || "";
-        setRequests((prev) =>
-            prev.map((r) =>
-                r.id === id
-                    ? {
-                        ...r,
-                        status,
-                        adminMemo: memo,
-                        handler: "관리자1",
-                        handledAt: new Date().toLocaleString(),
-                    }
-                    : r
-            )
-        );
-    };
-    const toggleSelect = (id: string) => {
-        setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
-    };
+    useEffect(() => {
+        if (refetch) {
+            const fetchUser = async () => {
+                setIsLoading(true)
+                try {
+                    const { data, message, pagination } = await api.depositLog({})
+                    const { total } = pagination
+                    setData(data)
+                    setTotal(total)
+                } catch (e: any) {
+                    const message = e?.response?.data?.message || "Something went wrong"
+                    console.error("Error fetching user lists: ", message)
+                } finally {
+                    setIsLoading(false)
+                    setRefetch(false)
+                }
+            }
+            fetchUser();
+        }
+    }, [refetch]);
+    // get users on reload
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setIsLoading(true)
+            try {
+                const { data, message, pagination } = await api.depositLog({})
+                const { total } = pagination
+                setData(data)
+                setTotal(total)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchUsers()
+    }, []);
+    // get user's next page
+    useEffect(() => {
+        const debouncedUserFetch = setTimeout(async () => {
+            setIsLoading(true)
+            try {
+                const { data } = await api.depositLog({ page: payload.page.toString() })
+                setData(data)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }, 1000 * 3)
+        return () => clearTimeout(debouncedUserFetch)
+    }, [payload.page]);
+    // get filtered users
+    useEffect(() => {
+        const debouncedUserFetch = setTimeout(async () => {
+            if (!payload.search || payload.search.trim() === "") return
 
-    const filtered = requests.filter(
-        (r) => r.id.includes(search) || r.name.includes(search)
-    );
 
-    const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
-    const totalPages = Math.ceil(filtered.length / pageSize);
+            setPayload(prev => ({ ...prev, page: 1 }))
+            setIsLoading(true)
+            try {
+                const { data } = await api.depositLog({ search: payload.search })
+                setData(data)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }, 1000 * 3)
+        return () => clearTimeout(debouncedUserFetch)
+    }, [payload.search]);
+    // get next page of filtered users
+    useEffect(() => {
+        const debouncedUserFetch = setTimeout(async () => {
+            const { page, search } = payload
+            if (search.trim() === "") return
 
-    const toggleAll = () => {
-        const ids = paginated.map((r) => r.id);
-        setSelected((prev) => (prev.length === ids.length ? [] : ids));
-    };
+            setIsLoading(true)
+            try {
+                const { data } = await api.depositLog({ page: page.toString(), search })
+                setData(data)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }, 1000 * 3)
+        return () => clearTimeout(debouncedUserFetch)
+    }, [payload]);
 
+    useEffect(() => {
+        console.log(data)
+    }, [data]);
 
     return (
-        <Box w="full" px={2} py={4}>
+        <Stack w="100%" h={"full"} px={2} py={4}>
+            <Stack
+                direction={{ base: "column", md: "row" }}
+                justify="space-between"
+                mb={4}
+            >
+                <Input
+                    placeholder="아이디 또는 이름 검색"
+                    value={payload.search}
+                    onChange={(e) => setPayload(prev => ({ ...prev, search: e.target.value }))}
+                    maxW="sm"
+                    bgColor={"white"}
+                />
+                <Button
+                    colorScheme="green"
+                    onClick={() => setRefetch(true)}
+                    isLoading={isLoading}
+                >
+                    새로고침
+                </Button>
+            </Stack>
             {/* Table */}
-            <Box bg={cardBg} p={4} rounded="xl" shadow="md" overflowX="auto">
-                <Table size="sm">
-                    <Thead bg={headerBg}>
-                        <Tr>
-                            <Th>
-                                <Checkbox isChecked={selected.length === paginated.length} onChange={toggleAll} />
-                            </Th>
-                            <Th>ID</Th>
-                            <Th>회원명</Th>
-                            <Th>금액</Th>
-                            <Th>계좌정보</Th>
-                            <Th>신청일</Th>
-                            <Th>입금경로</Th>
-                            <Th>요청메모</Th>
-                            <Th>관리자메모</Th>
-                            <Th>상태</Th>
-                            <Th>처리</Th>
-                        </Tr>
-                    </Thead>
-                    <Tbody>
-                        {
-                            paginated.map((r) =>
-                                <DepositTableRow
-                                    key={r.id}
-                                    r={r}
-                                    selected={selected}
-                                    toggleSelect={toggleSelect}
-                                    setRequests={setRequests}
-                                    updateStatus={updateStatus}
-                                />
-                            )
-                        }
-                    </Tbody>
-                </Table>
-            </Box>
+            {
+                isLoading ? (
+                    <Stack w={"100%"} p={10} justify={"center"} align={"center"} bgColor={"white"} rounded={"xl"}>
+                        <Spinner
+                            thickness='4px'
+                            speed='0.65s'
+                            emptyColor='gray.200'
+                            color='blue.500'
+                            size='xl'
+                        />
+                    </Stack>
+                ) : (
+                    <TableContainer w={"100%"} maxH={"full"} overflowY={"auto"} bg={cardBg} p={4} rounded="xl" shadow="md">
+                        <Table size="sm" bgColor={"white"}>
+                            <Thead >
+                                <Tr bg={headerBg}>
+                                    <Th py={3}>전화번호</Th>
+                                    <Th py={3}>소속</Th>
+                                    <Th py={3}>코인</Th>
+                                    <Th py={3}>수량</Th>
+                                    <Th py={3}>상태</Th>
+                                    <Th py={3}>생성일</Th>
+                                    <Th py={3}>관리</Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
+                                {
+                                    data.map(miner =>
+                                        <TableRow key={miner.id} miner={miner} mutate={mutate} />
+                                    )
+                                }
+                            </Tbody>
+                        </Table>
+                    </TableContainer>
+                )
+            }
 
             {/* Footer */}
-            <Flex justify="space-between" align="center" mt={4} wrap="wrap" gap={2}>
-                <Button
-                    colorScheme="red"
-                    size="sm"
-                    onClick={() => {
-                        if (window.confirm("선택한 입금 요청을 삭제하시겠습니까?")) {
-                            setRequests((prev) => prev.filter((r) => !selected.includes(r.id)));
-                            setSelected([]);
-                        }
-                    }}
-                    isDisabled={selected.length === 0}
-                >
-                    선택 삭제
-                </Button>
-                <Stack direction="row" spacing={1}>
-                    {
-                        Array.from({ length: totalPages }, (_, i) => (
-                            <Button
-                                key={i}
-                                size="sm"
-                                variant={page === i + 1 ? "solid" : "outline"}
-                                colorScheme="blue"
-                                onClick={() => setPage(i + 1)}
-                            >
-                                {i + 1}
-                            </Button>
-                        ))
-                    }
-                </Stack>
-            </Flex>
-        </Box>
+            <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
+                <Button colorScheme="blue" isDisabled={payload.page === 1} isLoading={isLoading} onClick={() => setPayload(prev => ({ ...prev, page: prev.page - 1 }))}>Prev</Button>
+                <Text>{payload.page} / {Math.ceil(total / size)}</Text>
+                <Button colorScheme="blue" isDisabled={payload.page === Math.ceil(total / size)} isLoading={isLoading} onClick={() => setPayload(prev => ({ ...prev, page: prev.page + 1 }))}>Next</Button>
+            </Stack>
+        </Stack>
     );
 }

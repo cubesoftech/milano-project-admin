@@ -1,4 +1,4 @@
-export type Pages = "" | "users" | "signup" | "deposit" | "withdraw" | "agencies" | "blockdeal" | "notice" | "coinControl" | "coinLog" | "logs" | "referral" | "boards" | "inquiry" | "directInquiry"
+export type Pages = "" | "users" | "signup" | "deposit" | "transactionRequest" | "agencies" | "blockdeal" | "notice" | "coinControl" | "coinLog" | "logs" | "referral" | "boards" | "inquiry" | "directInquiry"
 
 export interface Miners {
     id: number;

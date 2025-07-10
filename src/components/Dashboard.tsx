@@ -1,6 +1,10 @@
 'use client'
-import React, { useEffect, useState, createContext, useContext, memo } from "react";
-import { Box, Flex, Grid, Link, Text, useColorModeValue, VStack, HStack, Stack, GridItem, SimpleGrid } from "@chakra-ui/react";
+import React, { useEffect, useState, createContext, useContext, memo, useMemo } from "react";
+import {
+    useColorModeValue,
+    VStack, HStack, Stack, Flex, Grid, GridItem, SimpleGrid,
+    Box, Link, Text, Heading,
+} from "@chakra-ui/react";
 import { useTitleStore, usePageStore, useUserStore, useAgencyStore } from "@/utils/storage";
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend, } from 'chart.js';
@@ -8,6 +12,7 @@ import { useRouter } from "next/router";
 
 import { Pages } from "@/utils/interface";
 import axios from "axios";
+import { api } from "@/utils/api";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
@@ -70,14 +75,14 @@ function StatsCard() {
     const stats: { label: string, value: string, link?: Pages }[] = [
         { label: '총 회원 수', value: '1,245명', link: 'users' },
         { label: '총 입금액', value: '₩93,200,000', link: 'deposit' },
-        { label: '총 출금액', value: '₩54,300,000', link: 'withdraw' },
+        { label: '총 출금액', value: '₩54,300,000', link: 'transactionRequest' },
         { label: '정산 수익', value: '₩12,400,000', link: 'coinControl' },
         { label: '회사 순이익', value: '₩6,200,000' },
         { label: '금일 가입', value: '12명', link: 'signup' },
     ];
     const alerts = [
         { type: '입금 요청', count: 3, link: '/deposit' },
-        { type: '출금 요청', count: 1, link: '/withdraw' },
+        { type: '출금 요청', count: 1, link: '/transactionRequest' },
         { type: '회원가입 승인 대기', count: 2, link: '/signup' },
         { type: '신규 문의', count: 4, link: '/inquiry' },
     ];
@@ -87,7 +92,6 @@ function StatsCard() {
     const { setPage } = usePageStore()
     const { setUser } = useUserStore()
     const { selectAgency } = useAgencyStore()
-
 
     return (
         <Stack w={"100%"} align={"center"}>
@@ -429,6 +433,104 @@ function AdminMemo() {
         </Box>
     );
 }
+function OldDashboard() {
+    return (
+        <>
+            <StatsCard />
+            {/* <OldAdminStats /> */}
+            <SimpleGrid w={"100%"} columns={{ base: 1, md: 2 }} p={6} pt={3} spacingY={6} spacingX={3}>
+                <Charts />
+                <NewPosts />
+                <ExpiringDeals />
+                <Notices />
+                <RecentActivity />
+                <WeeklySummary />
+                <AdminMemo />
+            </SimpleGrid>
+        </>
+    );
+}
+
+function NewDashboard() {
+    const defaultStats: { path: Pages, title: string, value: number }[] = [
+        { path: "users", title: "총 사용자 수", value: 0 },
+        { path: "users", title: "총 입금액", value: 0 },
+        { path: "users", title: "총 출금 가능 ERC20 수량", value: 0 },
+        { path: "transactionRequest", title: "총 출금 가능 TRC20 수량", value: 0 },
+    ]
+
+    const { hoverBg } = useContext(DashboardContext)
+    const { setPage } = usePageStore()
+    const { push } = useRouter()
+
+    const [stats, setStats] = useState(defaultStats);
+    const [statsData, setStatsData] = useState({
+        user: 0,
+        deposit: 0,
+        withdrawableETH: 0,
+        withdrawableTRON: 0
+    });
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const { data } = await api.siteStatistics()
+                const { user, deposit, withdrawableETH, withdrawableTRON } = data
+                setStatsData({
+                    user,
+                    deposit,
+                    withdrawableETH,
+                    withdrawableTRON
+                })
+            } catch (e) {
+                console.error("Error fetching statistics: ", e)
+            }
+        }
+        fetchStats()
+    }, []);
+    useEffect(() => {
+        setStats([])
+        setStats([
+            { path: "users", title: "총 사용자 수", value: statsData.user ?? 0 },
+            { path: "transactionRequest", title: "총 입금액", value: statsData.deposit ?? 0 },
+            { path: "users", title: "총 출금 가능 ERC20 수량", value: statsData.withdrawableETH ?? 0 },
+            { path: "users", title: "총 출금 가능 TRC20 수량", value: statsData.withdrawableTRON ?? 0 },
+        ])
+    }, [statsData]);
+    useEffect(() => {
+        console.log(stats, statsData)
+    }, [stats, statsData]);
+
+    const handleRedirect = (path: Pages) => {
+        setPage(path);
+        push(`/${path}`)
+    }
+
+    const MemoizedStats = useMemo(() => {
+        return stats.map(({ path, title, value }) => (
+            <Stack
+                key={title} w={"100%"} h={"full"} p={5} bgColor={"white"}
+                rounded={"xl"} shadow={"lg"} cursor={"pointer"}
+                transition={"all ease-in-out 0.3s"}
+                _hover={{
+                    bgColor: hoverBg,
+                    transform: "scale(1.02) translateY(-5px)",
+                    shadow: "2xl"
+                }}
+                onClick={() => handleRedirect(path)}
+            >
+                <Heading size={"md"}>{title}</Heading>
+                <Heading size={"3xl"} color={"blue.900"}>{value}</Heading>
+            </Stack>
+        ))
+    }, [stats])
+
+    return (
+        <SimpleGrid w={"100%"} columns={2} p={5} spacing={10}>
+            {MemoizedStats}
+        </SimpleGrid>
+    );
+}
 
 function Dashboard() {
     const cardBg = useColorModeValue('white', 'gray.700');
@@ -441,17 +543,7 @@ function Dashboard() {
     }, []);
     return (
         <DashboardContext value={{ cardBg, hoverBg }}>
-            <StatsCard />
-            {/* <OldAdminStats /> */}
-            <SimpleGrid w={"100%"} columns={{ base: 1, md: 2 }} p={6} pt={3} spacingY={6} spacingX={3}>
-                <Charts />
-                <NewPosts />
-                <ExpiringDeals />
-                <Notices />
-                <RecentActivity />
-                <WeeklySummary />
-                <AdminMemo />
-            </SimpleGrid>
+            <NewDashboard />
         </DashboardContext>
     );
 }

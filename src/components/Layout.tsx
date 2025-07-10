@@ -16,7 +16,7 @@ function Sidebar() {
         { name: "📝 회원가입 관리", path: "signup" },
         // removed for jblock
         // { name: "💰 입금신청", path: "deposit" },
-        { name: "💸 출금신청", path: "withdraw" },
+        { name: "💸 입금/출금 요청", path: "transactionRequest" },
         { name: "🏢 에이전시 관리", path: "agencies" },
         { name: "📦 블록딜 설정", path: "blockdeal" },
         { name: "📢 공지사항", path: "notice" },

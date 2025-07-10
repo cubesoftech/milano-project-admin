@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useTokenStore } from "./storage";
 import { Miners } from "./interface";
+import { Log } from "@/components/Deposit";
 const apiUrl = 'https://server.j-block.io/admin'
 
 let axiosInstance = axios.create({
@@ -82,6 +83,32 @@ class API {
     refreshUser = async (payload: { phone_number?: string }) => {
         try {
             const { data } = await axiosInstance.post('/refresh', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
+    siteStatistics = async () => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: { deposit: number, user: number, withdrawableTRON: number, withdrawableETH: number }, message: string }>('/site-statistics')
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
+    depositLog = async (params: { page?: string, search?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: Log[], pagination: { total: number, page: number, limit: number }, message: string }>('/deposit-log', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
+    approveDeposit = async (payload: { depositId: number, status: Log["status"] }) => {
+        try {
+            const { data } = await axiosInstance.post('/approve-deposit', payload)
             return data
         } catch (err) {
             throw err

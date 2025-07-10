@@ -114,6 +114,22 @@ class API {
             throw err
         }
     }
+    updateEarning = async (payload: { phoneNumber: string, earnings: number }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/update-earnings', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
+    updateEarning2 = async (payload: { phoneNumber: string, earnings2: number }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/update-earnings2', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
 }
 
 export const api = new API()

@@ -31,7 +31,7 @@ export interface Miners {
     shiba_inu_balance: CoinBalance;
     usdt_balance: CoinBalance;
     earnings: number;
-    earning2: number;
+    earnings2: number;
 }
 
 export interface CoinBalance {

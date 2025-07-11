@@ -236,22 +236,7 @@ export default function CoinControl() {
     }, []);
 
     useEffect(() => {
-        const fetchPrices = async () => {
-            try {
-                const res = await fetch(
-                    "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
-                );
-                const data = await res.json();
-                // setPrices({
-                //     BTC: data.bitcoin.usd,
-                //     ETH: data.ethereum.usd,
-                // });
-            } catch (error) {
-                console.error("가격 정보를 불러올 수 없습니다.", error);
-            }
-        };
         setTItle("코인 지급/회수")
-        fetchPrices();
     }, []);
 
     const indexOfLast = currentPage * logsPerPage;
@@ -266,7 +251,7 @@ export default function CoinControl() {
             const { data } = await axios.get<{ history: Coinlog[] }>(url)
             setLogs(data.history)
         } catch (e: any) {
-            const message = e?.response?.data?.message || "Somthing went wrong"
+            const message = e?.response?.data?.message || "Something went wrong"
             console.error("Error fetching coin logs: ", message)
         } finally {
             setLogLoading(false)

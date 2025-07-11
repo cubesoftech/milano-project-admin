@@ -10,11 +10,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(401).json({ message: "Invalid method." })
     }
 
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    if (!token) {
-        return res.status(401).json({ message: "Unauthorize." })
-    }
-
     const { phoneNumber, name, amount, coin } = req.body as { phoneNumber: string, name: string, coin: string, amount: number }
 
     try {

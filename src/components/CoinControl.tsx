@@ -7,8 +7,9 @@ import {
     FormControl, FormLabel,
 } from "@chakra-ui/react";
 import { useTitleStore } from "@/utils/storage";
-import { CoinBalance, Coinlog } from "@/utils/interface";
-import axios from "axios";
+import { CoinLog } from "@/utils/interface";
+import { api } from "@/utils/api";
+import UseToastHooks from "@/hooks/UseToastHooks";
 
 
 interface Payload {
@@ -25,11 +26,11 @@ interface CoinFormProps {
 }
 interface LogTableProps {
     logLoading: boolean;
-    logs: Coinlog[];
-    currentLogs: Coinlog[];
-    totalPages: number;
-    currentPage: number;
-    setCurrentPage: Dispatch<SetStateAction<number>>
+    logs: CoinLog[];
+    total: number;
+    page: number;
+    size: number;
+    setPage: Dispatch<SetStateAction<number>>
 }
 
 function CoinControlModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
@@ -57,7 +58,7 @@ function CoinControlModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
         </Modal>
     );
 }
-function LogTable({ logLoading, logs, totalPages, currentLogs, currentPage, setCurrentPage }: LogTableProps) {
+function LogTable({ logLoading, logs, total, page, setPage, size }: LogTableProps) {
     return (
         <Stack w={"100%"} h={"full"} >
             <Text fontSize="lg" fontWeight="semibold" mb={2}>최근 코인 지급/회수 내역</Text>
@@ -82,25 +83,25 @@ function LogTable({ logLoading, logs, totalPages, currentLogs, currentPage, setC
                             )
                             : (
                                 <Table size="sm">
-                                    <Thead bg="oklch(92.76% 0.0058 264.53)">
-                                        <Tr>
-                                            <Th>회원 ID</Th>
-                                            <Th>이름</Th>
-                                            <Th>코인</Th>
+                                    <Thead >
+                                        <Tr bg="oklch(92.76% 0.0058 264.53)">
+                                            <Th py={3}>회원 ID</Th>
+                                            <Th py={3}>이름</Th>
+                                            <Th py={3}>코인</Th>
                                             {/* <Th>처리 유형</Th> */}
-                                            <Th>수량</Th>
-                                            <Th>처리일</Th>
+                                            <Th py={3}>수량</Th>
+                                            <Th py={3}>처리일</Th>
                                         </Tr>
                                     </Thead>
                                     <Tbody>
                                         {
-                                            currentLogs.map(log => (
+                                            logs.map(log => (
                                                 <Tr key={log.id}>
                                                     <Td>{log.id}</Td>
-                                                    <Td>{log.name}</Td>
+                                                    <Td>{log.miners.name}</Td>
                                                     <Td>{log.coin}</Td>
                                                     {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
-                                                    <Td>{log.amount.toLocaleString()}</Td>
+                                                    <Td>{log.balance.toLocaleString()}</Td>
                                                     <Td>{new Date(log.createdAt).toLocaleString()}</Td>
                                                 </Tr>
                                             ))
@@ -110,20 +111,11 @@ function LogTable({ logLoading, logs, totalPages, currentLogs, currentPage, setC
                             )
                 }
             </Box>
-            <HStack mt={4} justify="center">
-                {Array.from({ length: totalPages }, (_, i) => (
-                    <Button
-                        key={i}
-                        size="sm"
-                        bg={currentPage === i + 1 ? "blue.600" : "gray.200"}
-                        color={currentPage === i + 1 ? "white" : "black"}
-                        onClick={() => setCurrentPage(i + 1)}
-                        _hover={{ bg: currentPage === i + 1 ? "blue.600" : "gray.300" }}
-                    >
-                        {i + 1}
-                    </Button>
-                ))}
-            </HStack>
+            <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
+                <Button colorScheme="blue" isDisabled={page === 1} isLoading={logLoading} onClick={() => setPage(prev => (prev - 1))}>Prev</Button>
+                <Text>{page} / {Math.ceil(total / size)}</Text>
+                <Button colorScheme="blue" isDisabled={page === Math.ceil(total / size)} isLoading={logLoading} onClick={() => setPage(prev => (prev + 1))}>Next</Button>
+            </Stack>
         </Stack>
     );
 }
@@ -188,27 +180,16 @@ function CoinForm({ isLoading, payload, setPayload, handleSubmit }: CoinFormProp
 }
 
 export default function CoinControl() {
-    const logsPerPage = 10;
-
-    const toast = useToast()
+    const { success, error } = UseToastHooks()
     const modal = useDisclosure()
     const { setTItle } = useTitleStore();
 
-    const sampleLogs = [
-        { id: "U00123", name: "김철수", coin: "BTC", type: "지급", amount: 1000, date: "2025-06-21" },
-        { id: "U00124", name: "이영희", coin: "ETH", type: "회수", amount: 500, date: "2025-06-20" },
-        { id: "U00125", name: "홍길동", coin: "BTC", type: "지급", amount: 700, date: "2025-06-20" },
-        { id: "U00126", name: "박영수", coin: "ETH", type: "회수", amount: 400, date: "2025-06-19" },
-        { id: "U00127", name: "최지우", coin: "BTC", type: "지급", amount: 800, date: "2025-06-18" },
-        { id: "U00128", name: "장예린", coin: "ETH", type: "회수", amount: 200, date: "2025-06-18" },
-        { id: "U00129", name: "신동엽", coin: "BTC", type: "지급", amount: 600, date: "2025-06-17" },
-        { id: "U00130", name: "윤하눨", coin: "ETH", type: "회수", amount: 300, date: "2025-06-16" },
-        { id: "U00131", name: "정태우", coin: "BTC", type: "지급", amount: 900, date: "2025-06-15" },
-        { id: "U00132", name: "나은지", coin: "ETH", type: "회수", amount: 100, date: "2025-06-15" },
-        { id: "U00133", name: "고은솔", coin: "BTC", type: "지급", amount: 750, date: "2025-06-14" }
-    ]
-    const [logs, setLogs] = useState<Coinlog[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    // new states 
+    const size = 25
+    const [refetch, setRefetch] = useState(false);
+    const [data, setData] = useState<CoinLog[]>([]);
+    const [total, setTotal] = useState(1);
+    const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [logLoading, setLogLoading] = useState(false);
 
@@ -220,86 +201,83 @@ export default function CoinControl() {
     });
 
     useEffect(() => {
-        const getHistory = async () => {
-            const url = "/api/getCoinHistory"
+        if (refetch) {
+            const fetchUser = async () => {
+                setLogLoading(true)
+                try {
+                    const { data, pagination, message } = await api.coinLog({})
+                    const { total } = pagination
+                    setData(data)
+                    setTotal(total)
+                } catch (e: any) {
+                    const message = e?.response?.data?.message || "Something went wrong"
+                    console.error("Error fetching user lists: ", message)
+                } finally {
+                    setLogLoading(false)
+                    setRefetch(false)
+                }
+            }
+            fetchUser();
+        }
+    }, [refetch]);
+    // get users on reload
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setLogLoading(true)
             try {
-                const { data } = await axios.get(url)
-                console.log("result history: ", data.history)
-            } catch (e) {
-                console.log("Error fetching history: ", e)
+                const { data, pagination, message } = await api.coinLog({})
+                const { total } = pagination
+                setData(data)
+                setTotal(total)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setLogLoading(false)
             }
         }
-        getHistory()
-    }, []);
-    useEffect(() => {
-        fetchLogs()
-    }, []);
-
-    useEffect(() => {
+        fetchUsers()
         setTItle("코인 지급/회수")
     }, []);
-
-    const indexOfLast = currentPage * logsPerPage;
-    const indexOfFirst = indexOfLast - logsPerPage;
-    const currentLogs = logs.slice(indexOfFirst, indexOfLast);
-    const totalPages = Math.ceil(logs.length / logsPerPage);
-
-    const fetchLogs = async () => {
-        const url = "/api/getCoinLogs"
-        setLogLoading(true)
-        try {
-            const { data } = await axios.get<{ history: Coinlog[] }>(url)
-            setLogs(data.history)
-        } catch (e: any) {
-            const message = e?.response?.data?.message || "Something went wrong"
-            console.error("Error fetching coin logs: ", message)
-        } finally {
-            setLogLoading(false)
+    // get user's next page
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setLogLoading(true)
+            try {
+                const { data, pagination, message } = await api.coinLog({ page: page.toString() })
+                const { total } = pagination
+                setData(data)
+                setTotal(total)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setLogLoading(false)
+            }
         }
-    }
+        fetchUsers()
+    }, [page]);
+
     const handleSubmit = async () => {
         if (payload.phoneNumber.trim() === "" || payload.name.trim() === "" || payload.amount <= 0) {
-            return toast({
-                title: "Error",
-                description: "Invalid fields.",
-                status: "error",
-                duration: 5000,
-                isClosable: true,
-                position: "bottom"
-            })
+            error("Invalid fields")
+            return;
         }
-
         setIsLoading(true)
-        const url = "/api/giveCoin"
         try {
-            await axios.post(url, payload)
-            return toast({
-                title: "Success",
-                description: "Coin updated",
-                status: "success",
-                duration: 5000,
-                isClosable: true,
-                position: "bottom"
-            })
+            const { message } = await api.addBalance({ ...payload })
+            success(message)
         } catch (e: any) {
             const message = e?.response?.data?.message || "Something went wrong"
-            return toast({
-                title: "Error",
-                description: message,
-                status: "error",
-                duration: 5000,
-                isClosable: true,
-                position: "bottom"
-            })
-        }
-        finally {
-            fetchLogs()
+            error(message)
+        } finally {
             setPayload({
-                phoneNumber: "",
                 amount: 0,
+                coin: "BTC",
                 name: "",
-                coin: "BTC"
+                phoneNumber: ""
             })
+            setRefetch(true)
             setIsLoading(false)
         }
     }
@@ -317,11 +295,11 @@ export default function CoinControl() {
 
             <LogTable
                 logLoading={logLoading}
-                logs={logs}
-                currentLogs={currentLogs}
-                totalPages={totalPages}
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
+                logs={data}
+                page={page}
+                size={size}
+                total={total}
+                setPage={setPage}
             />
 
             <CoinControlModal {...modal} />

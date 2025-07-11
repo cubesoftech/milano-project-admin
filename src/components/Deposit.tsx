@@ -209,10 +209,6 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
         return () => clearTimeout(debouncedUserFetch)
     }, [payload]);
 
-    useEffect(() => {
-        console.log(data)
-    }, [data]);
-
     return (
         <Stack w="100%" h={"full"} px={2} py={4}>
             <Stack

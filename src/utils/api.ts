@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useTokenStore } from "./storage";
-import { Miners } from "./interface";
+import { CoinLog, Miners } from "./interface";
 import { Log } from "@/components/Deposit";
 const apiUrl = 'https://server.j-block.io/admin'
 
@@ -54,7 +54,17 @@ class API {
             throw err
         }
     };
-    addBalance = async (payload: { coin: string, amount: number, phoneNumber: string, name: string }) => {
+    coinLog = async (params: { page?: string, search?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: CoinLog[], pagination: { total: number, page: number, limit: number }, message: string }>('/coin-log', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
+    addBalance = async (payload: { coin: string, amount: number, phoneNumber: string }) => {
         try {
             const { data } = await axiosInstance.post<{ success: boolean, message: string }>("/add-balance", payload)
             return data

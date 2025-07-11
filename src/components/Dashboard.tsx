@@ -30,19 +30,6 @@ function OldAdminStats() {
 
     const [data, setData] = useState<any | null>(null);
 
-    useEffect(() => {
-        const fetch = async () => {
-            try {
-                const res = await axios.get<any>("/api/getSiteStat");
-                const d = res.data
-                setData(d)
-            } catch (e: any) {
-                const message = e?.response?.data?.message || "Error";
-                console.log("Error fetching stats: ", message)
-            }
-        }
-    }, []);
-
     const stats: { label: string, value: any }[] = [
         { label: "총 에이전트", value: data?.totalAgents ?? 0 },
         { label: "총 회원", value: data?.totalMiners ?? 0 },
@@ -489,7 +476,6 @@ function NewDashboard() {
         fetchStats()
     }, []);
     useEffect(() => {
-        setStats([])
         setStats([
             { path: "users", title: "총 사용자 수", value: statsData.user ?? 0 },
             { path: "transactionRequest", title: "총 입금액", value: statsData.deposit ?? 0 },
@@ -497,9 +483,6 @@ function NewDashboard() {
             { path: "users", title: "총 출금 가능 TRC20 수량", value: statsData.withdrawableTRON ?? 0 },
         ])
     }, [statsData]);
-    useEffect(() => {
-        console.log(stats, statsData)
-    }, [stats, statsData]);
 
     const handleRedirect = (path: Pages) => {
         setPage(path);

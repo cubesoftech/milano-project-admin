@@ -201,7 +201,6 @@ const MinerRow = ({
         };
         try {
             const res = await axios.post(url, data);
-            console.log(res.data);
             mutate();
         } catch (err) {
             console.log(err);
@@ -217,7 +216,6 @@ const MinerRow = ({
         };
         try {
             const res = await axios.post(url, data);
-            console.log(res.data);
             mutate();
         } catch (err) {
             console.log(err);
@@ -236,7 +234,6 @@ const MinerRow = ({
         };
         try {
             const res = await axios.post(url, data);
-            console.log(res.data);
             mutate();
         } catch (err) {
             console.log(err);
@@ -263,7 +260,6 @@ const MinerRow = ({
         setNoteValue(note);
         try {
             const res = await axios.post(url, data);
-            console.log(res.data);
             mutate();
         } catch (err) {
             console.log(err);

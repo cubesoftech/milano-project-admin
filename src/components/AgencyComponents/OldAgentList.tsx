@@ -253,7 +253,6 @@ const MinerRow = ({
                 <VStack>
                     {
                         balances.map((bal: any) => {
-                            console.log(bal, "bal");
                             return <Text>{`${bal.convertedBalance} ${bal.symbol}`}</Text>;
                         })
                     }
@@ -275,7 +274,6 @@ const MinerRow = ({
                 <VStack>
                     {
                         balances.map((bal: any) => {
-                            console.log(bal, "bal");
                             return <Text>{`${bal.convertedBalance} ${bal.symbol}`}</Text>;
                         })
                     }

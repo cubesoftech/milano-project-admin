@@ -30,6 +30,8 @@ export interface Miners {
     cardano_balance: CoinBalance;
     shiba_inu_balance: CoinBalance;
     usdt_balance: CoinBalance;
+    earnings: number;
+    earning2: number;
 }
 
 export interface CoinBalance {
@@ -40,10 +42,13 @@ export interface CoinBalance {
     updatedAt: string;
 }
 
-export interface Coinlog {
+export interface CoinLog {
     id: number;
-    name: string;
+    minerId: number;
     coin: string;
-    amount: number;
+    balance: number;
     createdAt: string;
+    updatedAt: string;
+    earnings: number;
+    miners: Miners
 }

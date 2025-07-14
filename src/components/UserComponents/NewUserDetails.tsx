@@ -13,16 +13,16 @@ function NewUserDetails() {
 
     const toast = UseToastHooks()
 
-    const [earnings, setEarnings] = useState(0);
-    const [earnings2, setEarnings2] = useState(0);
+    const [hashrate, setHashrate] = useState(0);
+    const [hashrate2, setHashrate2] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoading2, setIsLoading2] = useState(false);
 
-    const handleUpdateEarnings = async () => {
-        if (earnings <= 0) return;
+    const handleUpdateHashrate = async () => {
+        if (hashrate <= 0) return;
         setIsLoading(true)
         try {
-            const { message } = await api.updateEarning({ phoneNumber: user.phoneNumber, earnings })
+            const { message } = await api.updateHashrate({ phoneNumber: user.phoneNumber, hashrate })
             toast.success(message)
         } catch (e: any) {
             const message = e?.response?.data?.message
@@ -31,11 +31,11 @@ function NewUserDetails() {
             setIsLoading(false)
         }
     }
-    const handleUpdateEarnings2 = async () => {
-        if (earnings2 <= 0) return;
+    const handleUpdateHashrate2 = async () => {
+        if (hashrate2 <= 0) return;
         setIsLoading2(true)
         try {
-            const { message } = await api.updateEarning2({ phoneNumber: user.phoneNumber, earnings2 })
+            const { message } = await api.updateHashrate2({ phoneNumber: user.phoneNumber, hashRate2: hashrate2 })
             toast.success(message)
         } catch (e: any) {
             const message = e?.response?.data?.message
@@ -77,16 +77,16 @@ function NewUserDetails() {
                     <Stack align={"flex-end"} gap={1}>
                         <Stack w={"100%"} direction={"row"} justify={"flex-start"} align={"center"}>
                             <Text as={"strong"} whiteSpace={"nowrap"}>자유형 설정: </Text> {/* tunay */}
-                            <Input type="number" placeholder={user.earnings + "%"} onChange={(e) => setEarnings(Number(e.target.value))} />
+                            <Input type="number" placeholder={user.hashRate + "%"} onChange={(e) => setHashrate(Number(e.target.value))} />
                         </Stack>
-                        <Button w={"fit-content"} colorScheme="green" onClick={handleUpdateEarnings} isLoading={isLoading} isDisabled={!(user.tronAddress || user.ethAddress)}>업데이트</Button>
+                        <Button w={"fit-content"} colorScheme="green" onClick={handleUpdateHashrate} isLoading={isLoading} isDisabled={!(user.tronAddress || user.ethAddress)}>업데이트</Button>
                     </Stack>
                     <Stack align={"flex-end"} gap={1} mt={2}>
                         <Stack w={"100%"} direction={"row"} justify={"flex-start"} align={"center"}>
                             <Text as={"strong"} whiteSpace={"nowrap"}>고정형 설정: </Text> {/* fake */}
-                            <Input type="number" placeholder={user.earnings2 + "%"} onChange={(e) => setEarnings2(Number(e.target.value))} />
+                            <Input type="number" placeholder={user.hashRate2 + "%"} onChange={(e) => setHashrate2(Number(e.target.value))} />
                         </Stack>
-                        <Button w={"fit-content"} colorScheme="green" onClick={handleUpdateEarnings2} isLoading={isLoading2} >업데이트</Button>
+                        <Button w={"fit-content"} colorScheme="green" onClick={handleUpdateHashrate2} isLoading={isLoading2} >업데이트</Button>
                     </Stack>
                 </Box>
 

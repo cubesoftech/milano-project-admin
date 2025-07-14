@@ -20,6 +20,7 @@ export interface Miners {
     updatedAt: string;
     lastAccumulationAt: string;
     hashRate: number;
+    hashRate2: number;
     referralCode: string;
     password: string;
     status: boolean;
@@ -31,7 +32,6 @@ export interface Miners {
     shiba_inu_balance: CoinBalance;
     usdt_balance: CoinBalance;
     earnings: number;
-    earnings2: number;
 }
 
 export interface CoinBalance {

@@ -124,17 +124,17 @@ class API {
             throw err
         }
     }
-    updateEarning = async (payload: { phoneNumber: string, earnings: number }) => {
+    updateHashrate = async (payload: { phoneNumber: string, hashrate: number }) => {
         try {
-            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/update-earnings', payload)
+            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/update-hashrate', payload)
             return data
         } catch (err) {
             throw err
         }
     }
-    updateEarning2 = async (payload: { phoneNumber: string, earnings2: number }) => {
+    updateHashrate2 = async (payload: { phoneNumber: string, hashRate2: number }) => {
         try {
-            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/update-earnings2', payload)
+            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/update-hashrate2', payload)
             return data
         } catch (err) {
             throw err

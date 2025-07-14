@@ -168,6 +168,23 @@ function NewUserList() {
             })
         }
     }
+    const handleDeleteMiner = async (phoneNumber: string) => {
+        setIsLoading(true)
+        try {
+            await api.deleteMiner({ phoneNumber })
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong."
+            toast({
+                title: "Error",
+                description: message,
+                status: "error",
+                duration: 5000,
+                position: "bottom"
+            })
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     return (
         <Stack w="100%" h={"full"} px={2} py={4}>
@@ -224,6 +241,7 @@ function NewUserList() {
                                     <Th py={3}>erc 회수</Th> {/* eth */}
                                     <Th py={3}>trc 회수</Th> {/* tron */}
                                     <Th py={3}>잔액 새로고침</Th> {/* refresh */}
+                                    <Th py={3}>마이너 삭제</Th> {/* refresh */}
                                 </Tr>
                             </Thead>
                             <Tbody>
@@ -298,6 +316,14 @@ function NewUserList() {
                                                     )
                                                 }
                                             </Td>
+                                            <Td>
+                                                <Button
+                                                    colorScheme="red"
+                                                    onClick={() => handleDeleteMiner(miner.phoneNumber)}
+                                                >
+                                                    delete
+                                                </Button>
+                                            </Td>
                                         </Tr>
                                     )
                                 }
@@ -306,7 +332,6 @@ function NewUserList() {
                     </TableContainer>
                 )
             }
-
 
             <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
                 <Button colorScheme="blue" isDisabled={payload.page === 1} isLoading={isLoading} onClick={() => setPayload(prev => ({ ...prev, page: prev.page - 1 }))}>Prev</Button>

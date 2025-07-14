@@ -32,12 +32,14 @@ export interface Miners {
     shiba_inu_balance: CoinBalance;
     usdt_balance: CoinBalance;
     earnings: number;
+    note: string;
 }
 
 export interface CoinBalance {
     id: number;
     minerId: number;
     balance: number;
+    earnings: number;
     createdAt: string;
     updatedAt: string;
 }

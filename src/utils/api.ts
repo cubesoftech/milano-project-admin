@@ -140,6 +140,40 @@ class API {
             throw err
         }
     }
+    updateNote = async (payload: { phoneNumber: string, note: string }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/update-note', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
+    updatePassword = async (payload: { phoneNumber: string, password: string }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/update-password', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
+    deleteMiner = async (payload: { phoneNumber: string }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, data: Miners, message: string }>('/delete-miner', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
+    getUserCoinLog = async (params: { page?: string, search?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: CoinLog[], pagination: { total: number, page: number, limit: number }, message: string }>('/coin-log', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
 }
 
 export const api = new API()

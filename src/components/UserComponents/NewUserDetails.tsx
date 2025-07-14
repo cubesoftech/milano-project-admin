@@ -249,7 +249,6 @@ function NewUserDetails() {
                                         <Thead >
                                             <Tr bg="oklch(92.76% 0.0058 264.53)">
                                                 <Th py={3}>회원 ID</Th>
-                                                <Th py={3}>이름</Th>
                                                 <Th py={3}>코인</Th>
                                                 {/* <Th>처리 유형</Th> */}
                                                 <Th py={3}>수량</Th>
@@ -261,7 +260,6 @@ function NewUserDetails() {
                                                 coinLog.map(log => (
                                                     <Tr key={log.id}>
                                                         <Td>{log.id}</Td>
-                                                        <Td>{log.miners.name}</Td>
                                                         <Td>{log.coin}</Td>
                                                         {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
                                                         <Td>{log.balance.toLocaleString()}</Td>

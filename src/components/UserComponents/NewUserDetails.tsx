@@ -211,8 +211,8 @@ function NewUserDetails() {
                     <Text><strong>누적 수익:</strong> ₩{user.earnings.toLocaleString()} USDT</Text>
                     <Text><strong>금일 예상 수익:</strong> ₩{((1 / 24) * (user.hashRate / 100) * (user.balance * user.earnings)).toLocaleString()} USDT</Text>
                     <Divider my={2} />
-                    <Text><strong>보유자산:</strong> ₩{user.usdt_balance.balance.toLocaleString()} USDT</Text>
-                    <Text><strong>누적 수익:</strong> ₩{user.usdt_balance.earnings.toLocaleString() || 0} USDT</Text>
+                    <Text><strong>보유자산:</strong> ₩{(user.usdt_balance ? user.usdt_balance.balance : 0).toLocaleString()} USDT</Text>
+                    <Text><strong>누적 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text>
                     <Text><strong>금일 예상 수익:</strong> ₩{((1 / 24) * (user.hashRate2 / 100) * (user.usdt_balance?.balance || 0)).toLocaleString()} USDT</Text>
                 </Box>
 
@@ -240,42 +240,44 @@ function NewUserDetails() {
                         ) :
                             coinLog.length <= 0
                                 ? (
-                                    <Stack w={"100%"} h={"full"} rounded={"xl"} justify={"center"} align={"center"}>
+                                    <Stack w={"100%"} rounded={"xl"} justify={"center"} align={"center"}>
                                         <Heading size={"lg"}>데이터가 없습니다</Heading>
                                     </Stack>
                                 )
                                 : (
-                                    <Table size="sm">
-                                        <Thead >
-                                            <Tr bg="oklch(92.76% 0.0058 264.53)">
-                                                <Th py={3}>회원 ID</Th>
-                                                <Th py={3}>코인</Th>
-                                                {/* <Th>처리 유형</Th> */}
-                                                <Th py={3}>수량</Th>
-                                                <Th py={3}>처리일</Th>
-                                            </Tr>
-                                        </Thead>
-                                        <Tbody>
-                                            {
-                                                coinLog.map(log => (
-                                                    <Tr key={log.id}>
-                                                        <Td>{log.id}</Td>
-                                                        <Td>{log.coin}</Td>
-                                                        {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
-                                                        <Td>{log.balance.toLocaleString()}</Td>
-                                                        <Td>{new Date(log.createdAt).toLocaleString()}</Td>
-                                                    </Tr>
-                                                ))
-                                            }
-                                        </Tbody>
-                                    </Table>
+                                    <>
+                                        <Table size="sm">
+                                            <Thead >
+                                                <Tr bg="oklch(92.76% 0.0058 264.53)">
+                                                    <Th py={3}>회원 ID</Th>
+                                                    <Th py={3}>코인</Th>
+                                                    {/* <Th>처리 유형</Th> */}
+                                                    <Th py={3}>수량</Th>
+                                                    <Th py={3}>처리일</Th>
+                                                </Tr>
+                                            </Thead>
+                                            <Tbody>
+                                                {
+                                                    coinLog.map(log => (
+                                                        <Tr key={log.id}>
+                                                            <Td>{log.id}</Td>
+                                                            <Td>{log.coin}</Td>
+                                                            {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
+                                                            <Td>{log.balance.toLocaleString()}</Td>
+                                                            <Td>{new Date(log.createdAt).toLocaleString()}</Td>
+                                                        </Tr>
+                                                    ))
+                                                }
+                                            </Tbody>
+                                        </Table>
+                                        <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
+                                            <Button colorScheme="blue" isDisabled={page === 1} isLoading={isLoading4} onClick={() => setPage(prev => (prev - 1))}>Prev</Button>
+                                            <Text>{page} / {Math.ceil(total / size)}</Text>
+                                            <Button colorScheme="blue" isDisabled={page === Math.ceil(total / size)} isLoading={isLoading4} onClick={() => setPage(prev => (prev + 1))}>Next</Button>
+                                        </Stack>
+                                    </>
                                 )
                     }
-                    <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
-                        <Button colorScheme="blue" isDisabled={page === 1} isLoading={isLoading4} onClick={() => setPage(prev => (prev - 1))}>Prev</Button>
-                        <Text>{page} / {Math.ceil(total / size)}</Text>
-                        <Button colorScheme="blue" isDisabled={page === Math.ceil(total / size)} isLoading={isLoading4} onClick={() => setPage(prev => (prev + 1))}>Next</Button>
-                    </Stack>
                 </Box>
             </SimpleGrid>
         </Stack>

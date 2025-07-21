@@ -59,6 +59,59 @@ const UpdatePasswordModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         </Modal>
     );
 }
+const RecoverCoinModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+    const { user } = useUserStore()
+    if (!user) return null
+
+    const toast = UseToastHooks()
+    const [amount, setAmount] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSetNewPassword = async () => {
+        if (amount <= 0) {
+            toast.warning("Invalid amount")
+            return;
+        };
+        setIsLoading(true)
+        try {
+            const { message } = await api.recoverCoin({ phoneNumber: user.phoneNumber, amount })
+            toast.success(message)
+        } catch (e: any) {
+            const message = e?.response?.data?.message
+            toast.error(message)
+        } finally {
+            setIsLoading(false)
+            onClose()
+        }
+    }
+    const handleOnClose = () => {
+        setAmount(0)
+        onClose()
+    }
+
+    return (
+        <Modal size={"sm"} isOpen={isOpen} onClose={handleOnClose} motionPreset="slideInTop">
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>코인 회수</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <FormControl>
+                        <FormLabel>금액</FormLabel>
+                        <Input type="number" onChange={(e) => setAmount(Number(e.target.value))} />
+                    </FormControl>
+                </ModalBody>
+
+                <ModalFooter gap={3}>
+                    <Button size={"sm"} colorScheme="green" onClick={handleSetNewPassword} isLoading={isLoading}>
+                        적용
+                    </Button>
+                    <Button size={"sm"} variant={"ghost"} colorScheme="red" onClick={handleOnClose} isLoading={isLoading}>닫기</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
 
 function NewUserDetails() {
     const { user } = useUserStore()
@@ -66,6 +119,7 @@ function NewUserDetails() {
 
     const toast = UseToastHooks()
     const modal = useDisclosure()
+    const recover = useDisclosure()
     const size = 25;
 
     const [hashrate, setHashrate] = useState(0);
@@ -211,7 +265,11 @@ function NewUserDetails() {
                     <Text><strong>누적 수익:</strong> ₩{user.earnings.toLocaleString()} USDT</Text>
                     <Text><strong>금일 예상 수익:</strong> ₩{((1 / 24) * (user.hashRate / 100) * (user.balance * user.earnings)).toLocaleString()} USDT</Text>
                     <Divider my={2} />
-                    <Text><strong>보유자산:</strong> ₩{(user.usdt_balance ? user.usdt_balance.balance : 0).toLocaleString()} USDT</Text>
+                    <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"}>
+                        <Text><strong>보유자산:</strong> ₩{(user.usdt_balance ? user.usdt_balance.balance : 0).toLocaleString()} USDT</Text>
+                        <Button size={"sm"} colorScheme="blue" onClick={recover.onOpen}>코인 회수</Button>
+                        <RecoverCoinModal {...recover} />
+                    </Stack>
                     <Text><strong>누적 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.totalEarnings : 0).toLocaleString()} USDT</Text>
                     <Text><strong>금일 예상 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text>
                 </Box>

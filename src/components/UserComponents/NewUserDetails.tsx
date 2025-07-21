@@ -212,8 +212,8 @@ function NewUserDetails() {
                     <Text><strong>금일 예상 수익:</strong> ₩{((1 / 24) * (user.hashRate / 100) * (user.balance * user.earnings)).toLocaleString()} USDT</Text>
                     <Divider my={2} />
                     <Text><strong>보유자산:</strong> ₩{(user.usdt_balance ? user.usdt_balance.balance : 0).toLocaleString()} USDT</Text>
-                    <Text><strong>누적 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text>
-                    <Text><strong>금일 예상 수익:</strong> ₩{((1 / 24) * (user.hashRate2 / 100) * (user.usdt_balance?.balance || 0)).toLocaleString()} USDT</Text>
+                    <Text><strong>누적 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.totalEarnings : 0).toLocaleString()} USDT</Text>
+                    <Text><strong>금일 예상 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text>
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm" h={"fit-content"}>

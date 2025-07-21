@@ -42,6 +42,7 @@ export interface CoinBalance {
     earnings: number;
     createdAt: string;
     updatedAt: string;
+    totalEarnings: number;
 }
 
 export interface CoinLog {

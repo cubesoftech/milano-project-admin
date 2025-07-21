@@ -1,15 +1,33 @@
-import React, { memo, useState, useEffect } from "react";
+import React, { memo, useState, useEffect, Dispatch, SetStateAction } from "react";
 import {
     Box, Text, Stack, SimpleGrid, Divider, FormControl, FormLabel, Input, Button, Textarea, Heading, Spinner,
     Table, Thead, Tbody, Tfoot, Tr, Th, Td, TableCaption, TableContainer,
     Modal, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, ModalOverlay,
+    Tabs, TabList, TabPanels, Tab, TabPanel,
     useDisclosure
 } from "@chakra-ui/react";
 import { useUserStore } from "@/utils/storage";
 import UseToastHooks from "@/hooks/UseToastHooks";
 
 import { api } from "@/utils/api";
-import { CoinLog } from "@/utils/interface";
+import { CoinLog, RecoverCoinLog } from "@/utils/interface";
+
+interface CoinLogsTableProps {
+    isLoading: boolean;
+    coinLog: CoinLog[];
+    page: number;
+    total: number;
+    size: number;
+    setPage: Dispatch<SetStateAction<number>>
+}
+interface RecoverCoinLogsTableProps {
+    isLoading: boolean;
+    recoverCoinLog: RecoverCoinLog[];
+    page: number;
+    total: number;
+    size: number;
+    setPage: Dispatch<SetStateAction<number>>
+}
 
 const UpdatePasswordModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
     const { user } = useUserStore()
@@ -113,6 +131,117 @@ const RecoverCoinModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
     );
 }
 
+const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinLogsTableProps) => {
+    if (isLoading) {
+        return (
+            <Stack w={"100%"} h={"full"} justify={"center"} align={"center"}>
+                <Spinner
+                    thickness='4px'
+                    speed='0.65s'
+                    emptyColor='gray.200'
+                    color='blue.500'
+                    size='xl'
+                />
+            </Stack>
+        );
+    }
+    if (coinLog.length <= 0) {
+        return (
+            <Stack w={"100%"} rounded={"xl"} justify={"center"} align={"center"}>
+                <Heading size={"lg"}>데이터가 없습니다</Heading>
+            </Stack>
+        );
+    }
+
+    return (
+        <>
+            <Table size="sm">
+                <Thead >
+                    <Tr bg="oklch(92.76% 0.0058 264.53)">
+                        <Th py={3}>회원 ID</Th>
+                        <Th py={3}>코인</Th>
+                        {/* <Th>처리 유형</Th> */}
+                        <Th py={3}>수량</Th>
+                        <Th py={3}>처리일</Th>
+                    </Tr>
+                </Thead>
+                <Tbody>
+                    {
+                        coinLog.map(log => (
+                            <Tr key={log.id}>
+                                <Td>{log.id}</Td>
+                                <Td>{log.coin}</Td>
+                                {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
+                                <Td>{log.balance.toLocaleString()}</Td>
+                                <Td>{new Date(log.createdAt).toLocaleString()}</Td>
+                            </Tr>
+                        ))
+                    }
+                </Tbody>
+            </Table>
+            <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
+                <Button colorScheme="blue" isDisabled={page === 1} isLoading={isLoading} onClick={() => setPage(prev => (prev - 1))}>Prev</Button>
+                <Text>{page} / {Math.ceil(total / size)}</Text>
+                <Button colorScheme="blue" isDisabled={page === Math.ceil(total / size)} isLoading={isLoading} onClick={() => setPage(prev => (prev + 1))}>Next</Button>
+            </Stack>
+        </>
+    );
+}
+const RecoverCoinLogsTable = ({ recoverCoinLog, isLoading, page, size, total, setPage }: RecoverCoinLogsTableProps) => {
+    if (isLoading) {
+        return (
+            <Stack w={"100%"} h={"full"} justify={"center"} align={"center"}>
+                <Spinner
+                    thickness='4px'
+                    speed='0.65s'
+                    emptyColor='gray.200'
+                    color='blue.500'
+                    size='xl'
+                />
+            </Stack>
+        );
+    }
+    if (recoverCoinLog.length <= 0) {
+        return (
+            <Stack w={"100%"} rounded={"xl"} justify={"center"} align={"center"}>
+                <Heading size={"lg"}>데이터가 없습니다</Heading>
+            </Stack>
+        );
+    }
+
+    return (
+        <>
+            <Table size="sm">
+                <Thead >
+                    <Tr bg="oklch(92.76% 0.0058 264.53)">
+                        <Th py={3}>회원 ID</Th>
+                        {/* <Th>처리 유형</Th> */}
+                        <Th py={3}>수량</Th>
+                        <Th py={3}>처리일</Th>
+                    </Tr>
+                </Thead>
+                <Tbody>
+                    {
+                        recoverCoinLog.map(log => (
+                            <Tr key={log.id}>
+                                <Td>{log.id}</Td>
+                                {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
+                                <Td>{log.balance.toLocaleString()}</Td>
+                                <Td>{new Date(log.createdAt).toLocaleString()}</Td>
+                            </Tr>
+                        ))
+                    }
+                </Tbody>
+            </Table>
+            <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
+                <Button colorScheme="blue" isDisabled={page === 1} isLoading={isLoading} onClick={() => setPage(prev => (prev - 1))}>Prev</Button>
+                <Text>{page} / {Math.ceil(total / size)}</Text>
+                <Button colorScheme="blue" isDisabled={page === Math.ceil(total / size)} isLoading={isLoading} onClick={() => setPage(prev => (prev + 1))}>Next</Button>
+            </Stack>
+        </>
+    );
+}
+
 function NewUserDetails() {
     const { user } = useUserStore()
     if (!user) return null
@@ -122,19 +251,27 @@ function NewUserDetails() {
     const recover = useDisclosure()
     const size = 25;
 
+    const [tab, setTab] = useState(0);
     const [hashrate, setHashrate] = useState(0);
     const [hashrate2, setHashrate2] = useState(0);
     const [note, setNote] = useState("");
     const [coinLog, setCoinLog] = useState<CoinLog[]>([]);
     const [total, setTotal] = useState(1);
     const [page, setPage] = useState(1);
+    const [recoverCoinLog, setRecoverCoinLog] = useState<RecoverCoinLog[]>([]);
+    const [total2, setTotal2] = useState(1);
+    const [page2, setPage2] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoading2, setIsLoading2] = useState(false);
     const [isLoading3, setIsLoading3] = useState(false);
     const [isLoading4, setIsLoading4] = useState(false);
+    const [isLoading5, setIsLoading5] = useState(false);
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        setPage(1)
+        setPage2(1)
+
+        const fetchCoinLog = async () => {
             setIsLoading(true)
             try {
                 const { data, message, pagination } = await api.getUserCoinLog({ search: user.phoneNumber, page: page.toString() })
@@ -148,8 +285,28 @@ function NewUserDetails() {
                 setIsLoading(false)
             }
         }
-        fetchUsers()
-    }, []);
+        const fetchRecoverCoinLog = async () => {
+            setIsLoading5(true)
+            try {
+                const { data, message, pagination } = await api.getUserRecoverCoinLog({ search: user.phoneNumber, page: page2.toString() })
+                const { total } = pagination
+                setRecoverCoinLog(data)
+                setTotal2(total)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading5(false)
+            }
+        }
+
+        if (tab === 0) {
+            fetchCoinLog()
+        }
+        if (tab === 1) {
+            fetchRecoverCoinLog()
+        }
+    }, [tab]);
     // get user's next page
     useEffect(() => {
         const fetchLogs = async () => {
@@ -166,6 +323,21 @@ function NewUserDetails() {
         }
         fetchLogs()
     }, [page]);
+    useEffect(() => {
+        const fetchLogs = async () => {
+            setIsLoading5(true)
+            try {
+                const { data } = await api.getUserRecoverCoinLog({ search: user.phoneNumber, page: page2.toString() })
+                setRecoverCoinLog(data)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading5(false)
+            }
+        }
+        fetchLogs()
+    }, [page2]);
 
     const handleUpdateHashrate = async () => {
         if (hashrate <= 0) return;
@@ -283,59 +455,35 @@ function NewUserDetails() {
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm">
-                    <Text fontWeight="semibold" mb={2}>코인 지급/회수</Text>
-                    {
-                        isLoading4 ? (
-                            <Stack w={"100%"} h={"full"} justify={"center"} align={"center"}>
-                                <Spinner
-                                    thickness='4px'
-                                    speed='0.65s'
-                                    emptyColor='gray.200'
-                                    color='blue.500'
-                                    size='xl'
+                    <Tabs index={tab} onChange={(index) => setTab(index)}>
+                        <TabList>
+                            <Tab>코인 지급/회수</Tab> {/**coin logs */}
+                            <Tab>락업코인회수로그</Tab>
+                        </TabList>
+
+                        <TabPanels>
+                            <TabPanel>
+                                <CoinLogsTable
+                                    isLoading={isLoading}
+                                    coinLog={coinLog}
+                                    page={page}
+                                    size={size}
+                                    total={total}
+                                    setPage={setPage}
                                 />
-                            </Stack>
-                        ) :
-                            coinLog.length <= 0
-                                ? (
-                                    <Stack w={"100%"} rounded={"xl"} justify={"center"} align={"center"}>
-                                        <Heading size={"lg"}>데이터가 없습니다</Heading>
-                                    </Stack>
-                                )
-                                : (
-                                    <>
-                                        <Table size="sm">
-                                            <Thead >
-                                                <Tr bg="oklch(92.76% 0.0058 264.53)">
-                                                    <Th py={3}>회원 ID</Th>
-                                                    <Th py={3}>코인</Th>
-                                                    {/* <Th>처리 유형</Th> */}
-                                                    <Th py={3}>수량</Th>
-                                                    <Th py={3}>처리일</Th>
-                                                </Tr>
-                                            </Thead>
-                                            <Tbody>
-                                                {
-                                                    coinLog.map(log => (
-                                                        <Tr key={log.id}>
-                                                            <Td>{log.id}</Td>
-                                                            <Td>{log.coin}</Td>
-                                                            {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
-                                                            <Td>{log.balance.toLocaleString()}</Td>
-                                                            <Td>{new Date(log.createdAt).toLocaleString()}</Td>
-                                                        </Tr>
-                                                    ))
-                                                }
-                                            </Tbody>
-                                        </Table>
-                                        <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
-                                            <Button colorScheme="blue" isDisabled={page === 1} isLoading={isLoading4} onClick={() => setPage(prev => (prev - 1))}>Prev</Button>
-                                            <Text>{page} / {Math.ceil(total / size)}</Text>
-                                            <Button colorScheme="blue" isDisabled={page === Math.ceil(total / size)} isLoading={isLoading4} onClick={() => setPage(prev => (prev + 1))}>Next</Button>
-                                        </Stack>
-                                    </>
-                                )
-                    }
+                            </TabPanel>
+                            <TabPanel>
+                                <RecoverCoinLogsTable
+                                    isLoading={isLoading5}
+                                    recoverCoinLog={recoverCoinLog}
+                                    page={page2}
+                                    size={size}
+                                    total={total2}
+                                    setPage={setPage2}
+                                />
+                            </TabPanel>
+                        </TabPanels>
+                    </Tabs>
                 </Box>
             </SimpleGrid>
         </Stack>

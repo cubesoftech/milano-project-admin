@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useTokenStore } from "./storage";
-import { CoinLog, Miners } from "./interface";
+import { CoinLog, Miners, RecoverCoinLog } from "./interface";
 import { Log } from "@/components/Deposit";
 const apiUrl = 'https://server.j-block.io/admin'
 
@@ -182,6 +182,16 @@ class API {
             throw err
         }
     }
+    getUserRecoverCoinLog = async (params: { page?: string, search?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: RecoverCoinLog[], pagination: { total: number, page: number, limit: number }, message: string }>('/recover-coin-log', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
 }
 
 export const api = new API()

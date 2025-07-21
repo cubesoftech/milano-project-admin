@@ -55,3 +55,13 @@ export interface CoinLog {
     earnings: number;
     miners: Miners
 }
+
+export interface RecoverCoinLog {
+    id: number;
+    minerId: number;
+    coin: string;
+    balance: number;
+    createdAt: string;
+    updatedAt: string;
+    miners: Miners
+}

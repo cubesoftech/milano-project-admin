@@ -192,6 +192,14 @@ class API {
             throw err
         }
     };
+    deleteNote = async (payload: { phoneNumber: string }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, message: string }>('/delete-note', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
 }
 
 export const api = new API()

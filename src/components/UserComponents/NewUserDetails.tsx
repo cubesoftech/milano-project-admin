@@ -11,6 +11,7 @@ import UseToastHooks from "@/hooks/UseToastHooks";
 
 import { api } from "@/utils/api";
 import { CoinLog, RecoverCoinLog } from "@/utils/interface";
+import { useRouter } from "next/router";
 
 interface CoinLogsTableProps {
     isLoading: boolean;
@@ -28,8 +29,12 @@ interface RecoverCoinLogsTableProps {
     size: number;
     setPage: Dispatch<SetStateAction<number>>
 }
+interface BaseModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
 
-const UpdatePasswordModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const UpdatePasswordModal = ({ isOpen, onClose }: BaseModalProps) => {
     const { user } = useUserStore()
     if (!user) return null
 
@@ -77,7 +82,7 @@ const UpdatePasswordModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         </Modal>
     );
 }
-const RecoverCoinModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const RecoverCoinModal = ({ isOpen, onClose }: BaseModalProps) => {
     const { user } = useUserStore()
     if (!user) return null
 
@@ -130,8 +135,47 @@ const RecoverCoinModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
         </Modal>
     );
 }
+const ConfirmDeleteUserModal = ({ isOpen, onClose }: BaseModalProps) => {
+    const { user, setUser } = useUserStore()
+    if (!user) return null
+
+    const toast = UseToastHooks()
+    const router = useRouter()
+
+    const [isLoading, setIsLoading] = useState(false);
+    const handleAccept = async () => {
+        setIsLoading(true)
+        try {
+            await api.deleteMiner({ phoneNumber: user.phoneNumber })
+            toast.success(`Miner ${user.name} deleted`)
+            setUser(null)
+            router.push("/users")
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong."
+            toast.error(message)
+        } finally {
+            setIsLoading(false)
+            onClose()
+        }
+    }
+    return (
+        <Modal size={"md"} isOpen={isOpen} onClose={onClose} motionPreset="slideInTop">
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>채굴기 {user.name}를 정말 삭제하시겠습니까?</ModalHeader>
+                <ModalFooter gap={3}>
+                    <Button colorScheme="green" onClick={handleAccept} isLoading={isLoading}>
+                        적용
+                    </Button>
+                    <Button variant={"ghost"} colorScheme="red" onClick={onClose} isLoading={isLoading}>닫기</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
 
 const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinLogsTableProps) => {
+    console.log(coinLog)
     if (isLoading) {
         return (
             <Stack w={"100%"} h={"full"} justify={"center"} align={"center"}>
@@ -173,7 +217,7 @@ const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinL
                                 <Td>{log.coin}</Td>
                                 {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
                                 <Td>{log.balance.toLocaleString()}</Td>
-                                <Td>{new Date(log.createdAt).toLocaleString()}</Td>
+                                <Td>{new Date(log.createdAt).toLocaleString('en-US', { timeZone: 'UTC' })}</Td>
                             </Tr>
                         ))
                     }
@@ -249,12 +293,13 @@ function NewUserDetails() {
     const toast = UseToastHooks()
     const modal = useDisclosure()
     const recover = useDisclosure()
+    const deleteModal = useDisclosure()
     const size = 25;
 
     const [tab, setTab] = useState(0);
     const [hashrate, setHashrate] = useState(0);
     const [hashrate2, setHashrate2] = useState(0);
-    const [note, setNote] = useState("");
+    const [note, setNote] = useState(user.note);
     const [coinLog, setCoinLog] = useState<CoinLog[]>([]);
     const [total, setTotal] = useState(1);
     const [page, setPage] = useState(1);
@@ -375,6 +420,18 @@ function NewUserDetails() {
             const message = e?.response?.data?.message
             toast.error(message)
         } finally {
+            setIsLoading3(false)
+        }
+    }
+    const handleDeleteNote = async () => {
+        setIsLoading3(true)
+        try {
+            const { message } = await api.deleteNote({ phoneNumber: user.phoneNumber })
+            toast.success(message)
+        } catch (e: any) {
+            const message = e?.response?.data?.message
+            toast.error(message)
+        } finally {
             setNote("")
             setIsLoading3(false)
         }
@@ -384,8 +441,12 @@ function NewUserDetails() {
         <Stack w="full" p={6} spacing={6} bg="oklch(96.7% 0.0029 264.54)">
             <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"}>
                 <Text fontSize="2xl" fontWeight="bold">🧍 회원 상세정보</Text>
-                <Button colorScheme="blue" onClick={modal.onOpen}>비밀번호 변경</Button>
+                <Stack direction={"row"} justify={"center"} align={"center"}>
+                    <Button colorScheme="blue" onClick={modal.onOpen}>비밀번호 변경</Button>
+                    <Button colorScheme="red" onClick={deleteModal.onOpen}>채굴기 삭제</Button>
+                </Stack>
                 <UpdatePasswordModal {...modal} />
+                <ConfirmDeleteUserModal {...deleteModal} />
             </Stack>
 
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
@@ -448,9 +509,10 @@ function NewUserDetails() {
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm" h={"fit-content"}>
                     <Text fontWeight="semibold" mb={2}>참고</Text>
-                    <Textarea placeholder={user.note} onChange={(e) => setNote(e.target.value)}></Textarea>
-                    <Stack w={"100%"} align={"flex-end"} py={2}>
-                        <Button colorScheme="green" ml={"auto"} isLoading={isLoading3} onClick={handleUpdateNote}>업데이트</Button>
+                    <Textarea value={note} onChange={(e) => setNote(e.target.value)} />
+                    <Stack w={"100%"} py={2} direction={"row"} justify={"flex-end"} align={"center"} >
+                        <Button colorScheme="green" isLoading={isLoading3} onClick={handleUpdateNote}>업데이트</Button>
+                        <Button colorScheme="red" isLoading={isLoading3} onClick={handleDeleteNote}>삭제</Button>
                     </Stack>
                 </Box>
 
@@ -458,7 +520,7 @@ function NewUserDetails() {
                     <Tabs index={tab} onChange={(index) => setTab(index)}>
                         <TabList>
                             <Tab>코인 지급/회수</Tab> {/**coin logs */}
-                            <Tab>락업코인회수로그</Tab>
+                            <Tab>락업코인회수로그</Tab> {/**recover coin logs */}
                         </TabList>
 
                         <TabPanels>

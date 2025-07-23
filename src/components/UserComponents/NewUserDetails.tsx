@@ -271,7 +271,7 @@ const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinL
                                     <Td>{log.coin}</Td>
                                     <Td>{log.balance.toLocaleString()}</Td>
                                     <Td>{log.note}</Td>
-                                    <Td>{createdUTC.toLocaleDateString('kr-KR', { timeZone: 'UTC' })} {displayTime}</Td>
+                                    <Td>{createdUTC.toDateString()} {displayTime}</Td>
                                 </Tr>
                             )
                         })
@@ -362,7 +362,7 @@ const RecoverCoinLogsTable = ({ recoverCoinLog, isLoading, page, size, total, se
                                     {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
                                     <Td>{log.balance.toLocaleString()}</Td>
                                     <Td>{log.note}</Td>
-                                    <Td>{createdUTC.toLocaleDateString('kr-KR', { timeZone: 'UTC' })} {displayTime}</Td>
+                                    <Td>{createdUTC.toDateString()} {displayTime}</Td>
                                 </Tr>
                             )
                         })
@@ -549,7 +549,7 @@ function NewUserDetails() {
                     <Text><strong>이메일:</strong> 준비중입니다</Text>
                     <Text><strong>전화번호:</strong> {user.phoneNumber}</Text>
                     <Text><strong>상태:</strong> 준비중입니다</Text>
-                    <Text><strong>가입일:</strong>{new Date(user.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', month: "long", day: "numeric", year: "numeric" })}</Text>
+                    <Text><strong>가입일:</strong>{new Date(user.createdAt).toDateString()}</Text>
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm">

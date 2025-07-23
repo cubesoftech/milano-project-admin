@@ -271,7 +271,7 @@ const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinL
                                     <Td>{log.coin}</Td>
                                     <Td>{log.balance.toLocaleString()}</Td>
                                     <Td>{log.note}</Td>
-                                    <Td>{createdUTC.toDateString()} {displayTime}</Td>
+                                    <Td>{createdUTC.toDateString()} {createdUTC.toLocaleTimeString('ko-KR', { hour12: true })}</Td>
                                 </Tr>
                             )
                         })
@@ -362,7 +362,7 @@ const RecoverCoinLogsTable = ({ recoverCoinLog, isLoading, page, size, total, se
                                     {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
                                     <Td>{log.balance.toLocaleString()}</Td>
                                     <Td>{log.note}</Td>
-                                    <Td>{createdUTC.toDateString()} {displayTime}</Td>
+                                    <Td>{createdUTC.toDateString()} {createdUTC.toLocaleTimeString('ko-KR', { hour12: true })}</Td>
                                 </Tr>
                             )
                         })

@@ -53,6 +53,7 @@ export interface CoinLog {
     createdAt: string;
     updatedAt: string;
     earnings: number;
+    note: string;
     miners: Miners
 }
 

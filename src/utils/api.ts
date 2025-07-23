@@ -64,7 +64,7 @@ class API {
             throw err
         }
     };
-    addBalance = async (payload: { coin: string, amount: number, phoneNumber: string }) => {
+    addBalance = async (payload: { coin: string, amount: number, phoneNumber: string, note: string }) => {
         try {
             const { data } = await axiosInstance.post<{ success: boolean, message: string }>("/add-balance", payload)
             return data

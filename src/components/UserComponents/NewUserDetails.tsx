@@ -175,7 +175,6 @@ const ConfirmDeleteUserModal = ({ isOpen, onClose }: BaseModalProps) => {
 }
 
 const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinLogsTableProps) => {
-    console.log(coinLog)
     if (isLoading) {
         return (
             <Stack w={"100%"} h={"full"} justify={"center"} align={"center"}>
@@ -206,6 +205,7 @@ const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinL
                         <Th py={3}>코인</Th>
                         {/* <Th>처리 유형</Th> */}
                         <Th py={3}>수량</Th>
+                        <Th py={3}>메모</Th>
                         <Th py={3}>처리일</Th>
                     </Tr>
                 </Thead>
@@ -215,8 +215,8 @@ const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinL
                             <Tr key={log.id}>
                                 <Td>{log.id}</Td>
                                 <Td>{log.coin}</Td>
-                                {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
                                 <Td>{log.balance.toLocaleString()}</Td>
+                                <Td>{log.note}</Td>
                                 <Td>{new Date(log.createdAt).toLocaleString('en-US', { timeZone: 'UTC' })}</Td>
                             </Tr>
                         ))

@@ -17,6 +17,7 @@ interface Payload {
     name: string;
     coin: string;
     amount: number;
+    note: string;
 }
 interface CoinFormProps {
     isLoading: boolean;
@@ -88,8 +89,8 @@ function LogTable({ logLoading, logs, total, page, setPage, size }: LogTableProp
                                             <Th py={3}>회원 ID</Th>
                                             <Th py={3}>이름</Th>
                                             <Th py={3}>코인</Th>
-                                            {/* <Th>처리 유형</Th> */}
                                             <Th py={3}>수량</Th>
+                                            <Th py={3}>메모</Th>
                                             <Th py={3}>처리일</Th>
                                         </Tr>
                                     </Thead>
@@ -102,7 +103,8 @@ function LogTable({ logLoading, logs, total, page, setPage, size }: LogTableProp
                                                     <Td>{log.coin}</Td>
                                                     {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
                                                     <Td>{log.balance.toLocaleString()}</Td>
-                                                    <Td>{new Date(log.createdAt).toLocaleString()}</Td>
+                                                    <Td>{log.note}</Td>
+                                                    <Td>{new Date(log.createdAt).toLocaleString('en-US', { timeZone: 'UTC' })}</Td>
                                                 </Tr>
                                             ))
                                         }
@@ -162,13 +164,10 @@ function CoinForm({ isLoading, payload, setPayload, handleSubmit }: CoinFormProp
                     <FormLabel>코인 수량</FormLabel>
                     <Input type="number" placeholder="예: 0" onChange={(e) => setPayload({ ...payload, amount: Number(e.target.value) })} />
                 </FormControl>
-                {/* <FormControl>
-                        <FormLabel>처리 유형</FormLabel>
-                        <Select>
-                            <option value="give">지급</option>
-                            <option value="revoke">회수</option>
-                        </Select>
-                    </FormControl> */}
+                <FormControl>
+                    <FormLabel>메모</FormLabel>
+                    <Input onChange={(e) => setPayload({ ...payload, note: e.target.value })} />
+                </FormControl>
             </SimpleGrid>
             <Flex mt={6} justify="flex-start">
                 <Button bg="green.600" color="white" _hover={{ bg: "green.700" }} isLoading={isLoading} onClick={handleSubmit}>
@@ -196,7 +195,8 @@ export default function CoinControl() {
     const [payload, setPayload] = useState<Payload>({
         phoneNumber: "",
         name: "",
-        coin: "BTC",
+        coin: "USDT",
+        note: "",
         amount: 0
     });
 
@@ -273,8 +273,9 @@ export default function CoinControl() {
         } finally {
             setPayload({
                 amount: 0,
-                coin: "BTC",
+                coin: "uSDT",
                 name: "",
+                note: "",
                 phoneNumber: ""
             })
             setRefetch(true)

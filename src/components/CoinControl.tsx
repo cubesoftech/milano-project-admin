@@ -96,17 +96,20 @@ function LogTable({ logLoading, logs, total, page, setPage, size }: LogTableProp
                                     </Thead>
                                     <Tbody>
                                         {
-                                            logs.map(log => (
-                                                <Tr key={log.id}>
-                                                    <Td>{log.id}</Td>
-                                                    <Td>{log.miners.name}</Td>
-                                                    <Td>{log.coin}</Td>
-                                                    {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
-                                                    <Td>{log.balance.toLocaleString()}</Td>
-                                                    <Td>{log.note}</Td>
-                                                    <Td>{new Date(log.createdAt).toLocaleString('en-US', { timeZone: 'UTC' })}</Td>
-                                                </Tr>
-                                            ))
+                                            logs.map(log => {
+                                                const created = new Date(log.createdAt)
+                                                return (
+                                                    <Tr key={log.id}>
+                                                        <Td>{log.id}</Td>
+                                                        <Td>{log.miners.name}</Td>
+                                                        <Td>{log.coin}</Td>
+                                                        {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
+                                                        <Td>{log.balance.toLocaleString()}</Td>
+                                                        <Td>{log.note}</Td>
+                                                        <Td>{created.toLocaleDateString()}, {created.toLocaleTimeString()}</Td>
+                                                    </Tr>
+                                                )
+                                            })
                                         }
                                     </Tbody>
                                 </Table>

@@ -106,7 +106,7 @@ function LogTable({ logLoading, logs, total, page, setPage, size }: LogTableProp
                                                         {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
                                                         <Td>{log.balance.toLocaleString()}</Td>
                                                         <Td>{log.note}</Td>
-                                                        <Td>{created.toLocaleDateString()}, {created.toLocaleTimeString()}</Td>
+                                                        <Td>{created.toLocaleDateString('en-GB', { timeZone: 'UTC' })}, {created.toLocaleTimeString()}</Td>
                                                     </Tr>
                                                 )
                                             })

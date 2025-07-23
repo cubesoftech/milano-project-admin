@@ -87,28 +87,41 @@ const RecoverCoinModal = ({ isOpen, onClose }: BaseModalProps) => {
     if (!user) return null
 
     const toast = UseToastHooks()
-    const [amount, setAmount] = useState(0);
+    const [payload, setPayload] = useState({
+        amount: 0,
+        note: ""
+    });
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSetNewPassword = async () => {
-        if (amount <= 0) {
+        if (payload.amount <= 0) {
             toast.warning("Invalid amount")
             return;
         };
         setIsLoading(true)
         try {
-            const { message } = await api.recoverCoin({ phoneNumber: user.phoneNumber, amount })
+            const { message } = await api.recoverCoin({
+                phoneNumber: user.phoneNumber,
+                ...payload
+            })
             toast.success(message)
         } catch (e: any) {
             const message = e?.response?.data?.message
             toast.error(message)
         } finally {
+            setPayload({
+                amount: 0,
+                note: ""
+            })
             setIsLoading(false)
             onClose()
         }
     }
     const handleOnClose = () => {
-        setAmount(0)
+        setPayload({
+            amount: 0,
+            note: ""
+        })
         onClose()
     }
 
@@ -119,10 +132,16 @@ const RecoverCoinModal = ({ isOpen, onClose }: BaseModalProps) => {
                 <ModalHeader>코인 회수</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <FormControl>
-                        <FormLabel>금액</FormLabel>
-                        <Input type="number" onChange={(e) => setAmount(Number(e.target.value))} />
-                    </FormControl>
+                    <Stack w={"100%"}>
+                        <FormControl>
+                            <FormLabel mb={1}>금액</FormLabel>
+                            <Input type="number" value={payload.amount} onChange={(e) => setPayload({ ...payload, amount: Number(e.target.value) })} />
+                        </FormControl>
+                        <FormControl>
+                            <FormLabel mb={1}>메모</FormLabel>
+                            <Input value={payload.note} onChange={(e) => setPayload({ ...payload, note: e.target.value })} />
+                        </FormControl>
+                    </Stack>
                 </ModalBody>
 
                 <ModalFooter gap={3}>
@@ -261,6 +280,7 @@ const RecoverCoinLogsTable = ({ recoverCoinLog, isLoading, page, size, total, se
                         <Th py={3}>회원 ID</Th>
                         {/* <Th>처리 유형</Th> */}
                         <Th py={3}>수량</Th>
+                        <Th py={3}>메모</Th>
                         <Th py={3}>처리일</Th>
                     </Tr>
                 </Thead>
@@ -271,6 +291,7 @@ const RecoverCoinLogsTable = ({ recoverCoinLog, isLoading, page, size, total, se
                                 <Td>{log.id}</Td>
                                 {/* <Td color={log.type === "지급" ? "green.600" : "red.500"}>{log.type}</Td> */}
                                 <Td>{log.balance.toLocaleString()}</Td>
+                                <Td>{log.note}</Td>
                                 <Td>{new Date(log.createdAt).toLocaleString()}</Td>
                             </Tr>
                         ))
@@ -443,7 +464,7 @@ function NewUserDetails() {
                 <Text fontSize="2xl" fontWeight="bold">🧍 회원 상세정보</Text>
                 <Stack direction={"row"} justify={"center"} align={"center"}>
                     <Button colorScheme="blue" onClick={modal.onOpen}>비밀번호 변경</Button>
-                    <Button colorScheme="red" onClick={deleteModal.onOpen}>채굴기 삭제</Button>
+                    <Button colorScheme="red" onClick={deleteModal.onOpen}>사용자 삭제</Button>
                 </Stack>
                 <UpdatePasswordModal {...modal} />
                 <ConfirmDeleteUserModal {...deleteModal} />

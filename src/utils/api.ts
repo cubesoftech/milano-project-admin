@@ -174,7 +174,7 @@ class API {
             throw err
         }
     };
-    recoverCoin = async (payload: { phoneNumber: string, amount: number }) => {
+    recoverCoin = async (payload: { phoneNumber: string, amount: number, note: string }) => {
         try {
             const { data } = await axiosInstance.post<{ success: boolean, message: string }>('/recover-coin', payload)
             return data

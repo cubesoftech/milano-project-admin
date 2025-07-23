@@ -64,5 +64,6 @@ export interface RecoverCoinLog {
     balance: number;
     createdAt: string;
     updatedAt: string;
+    note: string;
     miners: Miners
 }

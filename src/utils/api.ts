@@ -236,6 +236,14 @@ class API {
             throw err
         }
     };
+    createInquiry = async (payload: { title: string, content: string, phoneNumber: string }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, message: string }>('/create-inquiry', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
 }
 
 export const api = new API()

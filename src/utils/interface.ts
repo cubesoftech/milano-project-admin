@@ -74,6 +74,8 @@ export interface Inquiries {
     title: string;
     createdAt: string;
     updatedAt: string;
+    userReplied: boolean;
+    adminReplied: boolean;
     miners: Miners;
 }
 

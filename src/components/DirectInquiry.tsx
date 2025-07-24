@@ -3,7 +3,7 @@ import {
     useDisclosure, TextProps,
     Stack, Flex, Box,
     Text, Button, IconButton, Spinner,
-    Input, Textarea,
+    Input, Textarea, FormControl, FormLabel,
     Table, Tbody, Td, Th, Thead, Tr,
     Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
 } from "@chakra-ui/react";
@@ -167,6 +167,66 @@ const DeleteModal = ({ isOpen, onClose, inquiry }: DeleteModalProps) => {
     );
 }
 
+function CreateInquiry({ setRefetch }: { setRefetch: Dispatch<SetStateAction<boolean>> }) {
+    const toast = UseToastHooks()
+    const [isLoading, setIsLoading] = useState(false);
+    const [payload, setPayload] = useState({
+        phoneNumber: "",
+        title: "",
+        content: "",
+    });
+
+    const handleCreateInquiry = async () => {
+        if (payload.title.trim() === "" || payload.content.trim() === "" || payload.phoneNumber.trim() === "") {
+            toast.warning("Invalid fields");
+            return;
+        }
+        setIsLoading(true)
+        try {
+            const { message } = await api.createInquiry(payload)
+            setRefetch(true)
+            handleResetPayload()
+            toast.success(message);
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong"
+            toast.error(message);
+        } finally {
+            setIsLoading(false)
+        }
+    }
+    const handleResetPayload = () => {
+        setPayload({
+            phoneNumber: "",
+            title: "",
+            content: "",
+        })
+    }
+    return (
+        <Stack w={"100%"} bgColor={"white"} borderRadius={"lg"} shadow={"md"} p={5}>
+            <FormControl>
+                <FormLabel>전화번호</FormLabel>
+                <Input value={payload.phoneNumber} onChange={(e) => setPayload({ ...payload, phoneNumber: e.target.value })} />
+            </FormControl>
+            <FormControl>
+                <FormLabel>제목</FormLabel>
+                <Input value={payload.title} onChange={(e) => setPayload({ ...payload, title: e.target.value })} />
+            </FormControl>
+            <FormControl>
+                <FormLabel>내용</FormLabel>
+                <Textarea value={payload.content} onChange={(e) => setPayload({ ...payload, content: e.target.value })} />
+            </FormControl>
+            <Stack w={"100%"} direction={"row"} justify={"flex-end"} align={"center"}>
+                <Button size={{ base: "md", md: "lg" }} colorScheme="blue" onClick={handleCreateInquiry} isLoading={isLoading}>
+                    보내기
+                </Button>
+                <Button size={{ base: "md", md: "lg" }} colorScheme="red" onClick={handleResetPayload} isLoading={isLoading}>
+                    삭제
+                </Button>
+            </Stack>
+        </Stack>
+    );
+}
+
 export default function DirectInquiry() {
     const { setTItle } = useTitleStore();
 
@@ -304,7 +364,7 @@ export default function DirectInquiry() {
                                             const created = new Date(inquiry.createdAt)
                                             return (
                                                 <Tr key={inquiry.id} cursor={"pointer"}>
-                                                    <Td>{inquiry.id}</Td>
+                                                    <Td>{inquiry.adminReplied ? "🟢" : "🔴"} {inquiry.id}</Td>
                                                     <Td>{inquiry.miners.id}</Td>
                                                     <Td>{inquiry.miners.name}</Td>
                                                     <Td>{inquiry.title}</Td>
@@ -330,6 +390,7 @@ export default function DirectInquiry() {
                     </>
                 )
             }
+            <CreateInquiry setRefetch={setRefetch} />
         </Stack>
     );
 };

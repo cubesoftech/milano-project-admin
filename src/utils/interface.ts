@@ -67,3 +67,23 @@ export interface RecoverCoinLog {
     note: string;
     miners: Miners
 }
+
+export interface Inquiries {
+    id: number;
+    minerId: number;
+    title: string;
+    createdAt: string;
+    updatedAt: string;
+    miners: Miners;
+}
+
+export interface Message {
+    id: number;
+    inquiryId: number;
+    senderId: number | null;
+    receiverId: number | null;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+    inquiry: Inquiries
+}

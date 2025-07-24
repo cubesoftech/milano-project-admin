@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useTokenStore } from "./storage";
-import { CoinLog, Miners, RecoverCoinLog } from "./interface";
+import { CoinLog, Inquiries, Message, Miners, RecoverCoinLog } from "./interface";
 import { Log } from "@/components/Deposit";
 const apiUrl = 'https://server.j-block.io/admin'
 
@@ -199,7 +199,43 @@ class API {
         } catch (err) {
             throw err
         }
-    }
+    };
+    inquiries = async (params: { page?: string, limit?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: Inquiries[], pagination: { total: number, page: number, limit: number }, message: string }>('/inquiries', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
+    inquiry = async (params: { page?: string, limit?: string, search: number }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: Message[], pagination: { total: number, page: number, limit: number }, message: string }>('/inquiry', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
+    replyInquiry = async (payload: { inquiryId: number, receiverId: number, content: string }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, message: string }>('/reply-inquiry', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
+    deleteInquiry = async (payload: { inquiryId: number }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, message: string }>('/delete-inquiry', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
 }
 
 export const api = new API()

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
     useDisclosure,
-    Stack, HStack, Flex, Box,
+    Stack, HStack, Flex, Box, Icon,
     Text, Button, Input,
     Table, Tbody, Td, Th, Thead, Tr,
     Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
@@ -10,7 +10,11 @@ import {
 import { useTitleStore } from "@/utils/storage";
 import { Miners } from "@/utils/interface";
 import { api } from "@/utils/api";
-import Tree from "react-d3-tree"
+
+import { FaUser, FaRegUser } from "react-icons/fa";
+
+import Tree from "rc-tree";
+import "rc-tree/assets/index.css";
 
 interface ReferrerTreeModalProps {
     isOpen: boolean;
@@ -22,20 +26,6 @@ const ReferrerTreeModal = ({ isOpen, onClose, miner }: ReferrerTreeModalProps) =
     if (!miner.referredUsers || miner.referredUsers.length <= 0) {
         return;
     }
-
-    const treeContainer = useRef<HTMLDivElement>(null);
-    const [translate, setTranslate] = useState({ x: 0, y: 0 });
-
-    useEffect(() => {
-        if (treeContainer.current) {
-            const dimensions = treeContainer.current.getBoundingClientRect();
-            setTranslate({
-                x: dimensions.width / 2,
-                y: 100 // you can adjust vertical spacing
-            });
-        }
-    }, [isOpen]); // update when modal opens
-
 
     const data = {
         name: miner.name,
@@ -93,16 +83,83 @@ const ReferrerTreeModal = ({ isOpen, onClose, miner }: ReferrerTreeModalProps) =
             })
         ]
     }
+
+    const data1 = {
+        key: miner.id.toString(),
+        title: miner.name,
+        children: miner.referredUsers.map(l1 => ({
+            // level1
+            key: l1.id.toString(),
+            title: l1.name,
+            children: l1.referredUsers?.map(l2 => ({
+                // level2
+                key: l2.id.toString(),
+                title: l2.name,
+                children: l2.referredUsers?.map(l3 => ({
+                    // level3
+                    key: l3.id.toString(),
+                    title: l3.name,
+                    children: l3.referredUsers?.map(l4 => ({
+                        // level4
+                        key: l4.id.toString(),
+                        title: l4.name,
+                    }))
+                }))
+            }))
+        }))
+    }
+
+    const data3 = [
+        {
+            key: miner.id.toString(),
+            title: miner.name,
+            icon: <Icon as={FaUser} />,
+            children: miner.referredUsers.map(l1 => ({
+                // level1
+                key: `${miner.id}-${l1.id}`,
+                title: l1.name,
+                icon: !l1.referredUsers || (l1.referredUsers?.length <= 0) ? <Icon as={FaRegUser} /> : <Icon as={FaUser} />,
+                children: l1.referredUsers?.map(l2 => ({
+
+                    // level2
+                    key: `${l1.id}-${l2.id}`,
+                    title: l2.name,
+                    icon: !l2.referredUsers || (l2.referredUsers?.length <= 0) ? <Icon as={FaRegUser} /> : <Icon as={FaUser} />,
+                    children: l2.referredUsers?.map(l3 => ({
+
+                        // level3
+                        key: `${l2.id}-${l3.id}`,
+                        title: l3.name,
+                        icon: !l3.referredUsers || (l3.referredUsers?.length <= 0) ? <Icon as={FaRegUser} /> : <Icon as={FaUser} />,
+                        children: l3.referredUsers?.map(l4 => ({
+
+                            // level4
+                            key: `${l3.id}-${l4.id}`,
+                            title: l4.name,
+                            icon: <Icon as={FaRegUser} />,
+                        }))
+                    }))
+                }))
+            }))
+        }
+    ]
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size={"6xl"} isCentered>
+        <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">
             <ModalOverlay />
-            <ModalContent h={"90vh"}>
+            <ModalContent>
                 <ModalBody>
                     <Tree
-                        data={data}
-                        orientation="vertical"
-                        pathFunc={"step"}
-                        nodeSize={{ x: 200, y: 200 }}
+                        treeData={data3}
+                        defaultExpandAll
+                        selectable={false}
+                        icon={null}
+                        height={400}
+                        itemHeight={40}
+                        switcherIcon={null}
+                        showLine
+                        style={{
+                            border: "none"
+                        }}
                     />
                 </ModalBody>
             </ModalContent>

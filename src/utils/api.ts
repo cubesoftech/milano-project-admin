@@ -244,6 +244,16 @@ class API {
             throw err
         }
     };
+    referrer = async (params: { page?: string, limit?: string, search?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: Miners[], pagination: { total: number, page: number, limit: number }, message: string }>('/referrer', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
 }
 
 export const api = new API()

@@ -276,7 +276,7 @@ export default function Deposit({ }: { type: "deposit" | "withdraw" }) {
                                     <Th py={3}>코인</Th>
                                     {
                                         type === "deposit" && (
-                                            <Th py={3}>type</Th>
+                                            <Th py={3}>종류</Th>
                                         )
                                     }
                                     <Th py={3}>수량</Th>

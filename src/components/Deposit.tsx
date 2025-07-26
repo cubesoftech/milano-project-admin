@@ -1,5 +1,5 @@
 "use client";
-import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useState, useEffect, useRef } from "react";
 import {
     useToast, useColorModeValue,
     Box, Button, Flex, Stack, Spinner, Link, Text,
@@ -25,7 +25,21 @@ export interface Log {
     miners: Miners
 }
 
-function TableRow({ miner, mutate }: { miner: Log, mutate: KeyedMutator<any> }) {
+interface GetResult {
+    success: boolean;
+    data: Log[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+    };
+    message: string;
+}
+
+type GetRequest = (params: { page?: string; search?: string; limit?: string; }) => Promise<GetResult>
+type TransactionType = "deposit" | "withdrawal";
+
+function TableRow({ miner, type, mutate }: { miner: Log, type: TransactionType, mutate: KeyedMutator<any> }) {
 
     const { error, success } = UseToastHooks()
     const [status, setStatus] = useState<LogStatus>(miner.status);
@@ -41,7 +55,12 @@ function TableRow({ miner, mutate }: { miner: Log, mutate: KeyedMutator<any> }) 
         if (status === "PENDING") return;
         setIsLoading(true)
         try {
-            await api.approveDeposit({ depositId: miner.id, status })
+            if (type === "deposit") {
+                await api.approveDeposit({ depositId: miner.id, status });
+            }
+            if (type === "withdrawal") {
+                await api.approveWithdrawal({ withdrawalId: miner.id, status });
+            }
             mutate()
             success("Status updated")
         } catch (e: any) {
@@ -73,7 +92,7 @@ function TableRow({ miner, mutate }: { miner: Log, mutate: KeyedMutator<any> }) 
     );
 }
 
-export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
+export default function Deposit({ }: { type: "deposit" | "withdraw" }) {
     const cardBg = useColorModeValue("white", "gray.700");
     const headerBg = useColorModeValue("gray.100", "gray.600");
 
@@ -85,16 +104,21 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
         search: "",
         page: 1
     });
+    const [type, setType] = useState<TransactionType>("deposit");
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState<Log[]>([]);
     const [total, setTotal] = useState(1);
-    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [refetch, setRefetch] = useState(false);
     const size = 25
 
+    const RequestType: Record<TransactionType, GetRequest> = {
+        deposit: api.depositLog,
+        withdrawal: api.withdrawalLog
+    }
+
     const { mutate } = useSWR(
         accessToken ? 'miners' : null,
-        () => api.depositLog({ page: payload.page.toString() }),
+        () => RequestType[type]({ page: payload.page.toString(), limit: size.toString() }),
         {
             revalidateOnFocus: false,
             revalidateIfStale: false,
@@ -116,31 +140,16 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
     }, []);
 
     useEffect(() => {
-        if (refetch) {
-            const fetchUser = async () => {
-                setIsLoading(true)
-                try {
-                    const { data, message, pagination } = await api.depositLog({})
-                    const { total } = pagination
-                    setData(data)
-                    setTotal(total)
-                } catch (e: any) {
-                    const message = e?.response?.data?.message || "Something went wrong"
-                    console.error("Error fetching user lists: ", message)
-                } finally {
-                    setIsLoading(false)
-                    setRefetch(false)
-                }
-            }
-            fetchUser();
-        }
-    }, [refetch]);
-    // get users on reload
+        setRefetch(true);
+        setPayload({ ...payload, page: 1 });
+        setTotal(0);
+    }, [type]);
+    // get deposit history on refresh
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchUser = async () => {
             setIsLoading(true)
             try {
-                const { data, message, pagination } = await api.depositLog({})
+                const { data, message, pagination } = await RequestType[type]({ limit: size.toString() })
                 const { total } = pagination
                 setData(data)
                 setTotal(total)
@@ -149,16 +158,20 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
                 console.error("Error fetching user lists: ", message)
             } finally {
                 setIsLoading(false)
+                setRefetch(false)
             }
         }
-        fetchUsers()
-    }, []);
-    // get user's next page
+
+        if (refetch) {
+            fetchUser();
+        }
+    }, [refetch]);
+    // get history next page
     useEffect(() => {
-        const debouncedUserFetch = setTimeout(async () => {
+        const fetchHistory = async () => {
             setIsLoading(true)
             try {
-                const { data } = await api.depositLog({ page: payload.page.toString() })
+                const { data } = await RequestType[type]({ page: payload.page.toString(), search: payload.search, limit: size.toString() })
                 setData(data)
             } catch (e: any) {
                 const message = e?.response?.data?.message || "Something went wrong"
@@ -166,19 +179,38 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
             } finally {
                 setIsLoading(false)
             }
-        }, 1000 * 3)
-        return () => clearTimeout(debouncedUserFetch)
+        }
+        fetchHistory()
     }, [payload.page]);
-    // get filtered users
+    // get filtered history
     useEffect(() => {
+        // reset the page to 1 when search is empty
+        // get all history when search is empty
+        if (!payload.search || payload.search.trim() === "") {
+            setPayload({ ...payload, page: 1 })
+            const fetchUser = async () => {
+                setIsLoading(true)
+                try {
+                    const { data, message, pagination } = await RequestType[type]({ limit: size.toString() })
+                    const { total } = pagination
+                    setData(data)
+                    setTotal(total)
+                } catch (e: any) {
+                    const message = e?.response?.data?.message || "Something went wrong"
+                    console.error("Error fetching user lists: ", message)
+                } finally {
+                    setIsLoading(false)
+                }
+            }
+            fetchUser()
+            return;
+        }
+
         const debouncedUserFetch = setTimeout(async () => {
-            if (!payload.search || payload.search.trim() === "") return
-
-
-            setPayload(prev => ({ ...prev, page: 1 }))
+            setPayload({ ...payload, page: 1 })
             setIsLoading(true)
             try {
-                const { data } = await api.depositLog({ search: payload.search })
+                const { data } = await RequestType[type]({ search: payload.search, limit: size.toString() })
                 setData(data)
             } catch (e: any) {
                 const message = e?.response?.data?.message || "Something went wrong"
@@ -189,25 +221,6 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
         }, 1000 * 3)
         return () => clearTimeout(debouncedUserFetch)
     }, [payload.search]);
-    // get next page of filtered users
-    useEffect(() => {
-        const debouncedUserFetch = setTimeout(async () => {
-            const { page, search } = payload
-            if (search.trim() === "") return
-
-            setIsLoading(true)
-            try {
-                const { data } = await api.depositLog({ page: page.toString(), search })
-                setData(data)
-            } catch (e: any) {
-                const message = e?.response?.data?.message || "Something went wrong"
-                console.error("Error fetching user lists: ", message)
-            } finally {
-                setIsLoading(false)
-            }
-        }, 1000 * 3)
-        return () => clearTimeout(debouncedUserFetch)
-    }, [payload]);
 
     return (
         <Stack w="100%" h={"full"} px={2} py={4}>
@@ -230,6 +243,10 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
                 >
                     새로고침
                 </Button>
+            </Stack>
+            <Stack direction={"row"}>
+                <Button colorScheme="blue" variant={type === "deposit" ? "solid" : "outline"} onClick={() => setType("deposit")}>출금 요청</Button>
+                <Button colorScheme="blue" variant={type === "withdrawal" ? "solid" : "outline"} onClick={() => setType("withdrawal")}>입금 요청</Button>
             </Stack>
             {/* Table */}
             {
@@ -260,7 +277,7 @@ export default function Deposit({ type }: { type: "deposit" | "withdraw" }) {
                             <Tbody>
                                 {
                                     data.map(miner =>
-                                        <TableRow key={miner.id} miner={miner} mutate={mutate} />
+                                        <TableRow key={miner.id} miner={miner} mutate={mutate} type={type} />
                                     )
                                 }
                             </Tbody>

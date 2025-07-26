@@ -2,16 +2,16 @@ import React, { useEffect, useState, Dispatch, SetStateAction, useRef } from "re
 import {
     useDisclosure, TextProps,
     Stack, Flex, Box,
-    Text, Button, IconButton, Spinner,
+    Text, Button, IconButton, Spinner, Checkbox,
     Input, Textarea, FormControl, FormLabel,
-    Table, Tbody, Td, Th, Thead, Tr,
+    Table, Thead, Tbody, Tfoot, Tr, Th, Td, TableCaption, TableContainer,
     Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
 } from "@chakra-ui/react";
 import { useTitleStore } from "@/utils/storage";
 import UseToastHooks from "@/hooks/UseToastHooks";
 import { IoIosSend } from "react-icons/io";
 
-import { Inquiries, Message } from "@/utils/interface";
+import { Inquiries, Message, Miners } from "@/utils/interface";
 import { api } from "@/utils/api";
 
 interface ModalBaseProps {
@@ -32,6 +32,12 @@ interface MessageModalProps extends ModalBaseProps {
 }
 interface DeleteModalProps extends ModalBaseProps {
     inquiry: Inquiries
+}
+interface UsersModalProps extends ModalBaseProps {
+    setRefetch: Dispatch<SetStateAction<boolean>>;
+    title: string;
+    content: string;
+    resetPayload: () => void;
 }
 
 const MessageModal = ({ isOpen, onClose, inquiry, messages, setMessage }: MessageModalProps) => {
@@ -166,9 +172,215 @@ const DeleteModal = ({ isOpen, onClose, inquiry }: DeleteModalProps) => {
         </Modal>
     );
 }
+const UsersModal = ({ isOpen, onClose, setRefetch, title, content, resetPayload }: UsersModalProps) => {
+    const size = 10;
+    const { success, error } = UseToastHooks()
+
+    const [data, setData] = useState<Miners[]>([]);
+    const [total, setTotal] = useState(1);
+    const [page, setPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+    const [search, setSearch] = useState("");
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+    // get users on open
+    useEffect(() => {
+        const fetchUser = async () => {
+            setIsLoading(true)
+            setSelectedUsers([]);
+            try {
+                const { data, message, pagination } = await api.miners({ limit: size.toString() })
+                const { total } = pagination
+                setData(data)
+                setTotal(total)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchUser();
+    }, [isOpen]);
+    // get users next page
+    useEffect(() => {
+        const fetchHistory = async () => {
+            setSelectedUsers([]);
+            setIsLoading(true)
+            try {
+                const { data } = await api.miners({ page: page.toString(), search: search, limit: size.toString() })
+                setData(data)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchHistory()
+    }, [page]);
+    // get filtered user
+    useEffect(() => {
+        // reset the page to 1 when search is empty
+        // get all users when search is empty
+        if (!search || search.trim() === "") {
+            setPage(1)
+            setSelectedUsers([]);
+            const fetchUser = async () => {
+                setIsLoading(true)
+                try {
+                    const { data, message, pagination } = await api.miners({ limit: size.toString() })
+                    const { total } = pagination
+                    setData(data)
+                    setTotal(total)
+                } catch (e: any) {
+                    const message = e?.response?.data?.message || "Something went wrong"
+                    console.error("Error fetching user lists: ", message)
+                } finally {
+                    setIsLoading(false)
+                }
+            }
+            fetchUser()
+            return;
+        }
+
+        const debouncedUserFetch = setTimeout(async () => {
+            setPage(1);
+            setSelectedUsers([]);
+            setIsLoading(true);
+            try {
+                const { data } = await api.miners({ search: search, limit: size.toString() })
+                setData(data)
+            } catch (e: any) {
+                const message = e?.response?.data?.message || "Something went wrong"
+                console.error("Error fetching user lists: ", message)
+            } finally {
+                setIsLoading(false)
+            }
+        }, 1000 * 2)
+        return () => clearTimeout(debouncedUserFetch)
+    }, [search]);
+
+    const toggleSelect = (phoneNumber: string) => {
+        setSelectedUsers(prev =>
+            prev.includes(phoneNumber) ? prev.filter((uid) => uid !== phoneNumber) : [...prev, phoneNumber]
+        );
+    };
+    const toggleAll = () => {
+        setSelectedUsers(selectedUsers.length === data.length ? [] : data.map((u) => u.phoneNumber));
+    };
+    // reset data on close
+    const handleOnClose = () => {
+        setSelectedUsers([]);
+        setPage(1);
+        setSearch("");
+        setRefetch(true);
+        onClose();
+    }
+    const handleCreateInquiries = async () => {
+        if (selectedUsers.length === 0) {
+            error("No users selected");
+            return;
+        }
+        if (title.trim() === "") {
+            error("No title provided");
+            return;
+        }
+        if (content.trim() === "") {
+            error("No content provided");
+            return;
+        }
+
+        setIsLoading(true)
+        try {
+            const { message } = await api.createBulkMessage({ phoneNumbers: selectedUsers, title, content })
+            setRefetch(true)
+            success(message);
+            resetPayload()
+            handleOnClose()
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong"
+            error(message);
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    return (
+        <Modal isOpen={isOpen} onClose={handleOnClose}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>👥 회원 관리</ModalHeader>
+                <ModalBody>
+                    <Input value={search} onChange={e => setSearch(e.target.value)} />
+                    {
+                        isLoading ? (
+                            <Stack w={"100%"} p={10} justify={"center"} align={"center"} bgColor={"white"} rounded={"xl"}>
+                                <Spinner
+                                    thickness='4px'
+                                    speed='0.65s'
+                                    emptyColor='gray.200'
+                                    color='blue.500'
+                                    size='xl'
+                                />
+                            </Stack>
+                        ) : (
+                            <TableContainer pt={2}>
+                                <Table size={"sm"} variant='simple'>
+                                    <Thead>
+                                        <Tr>
+                                            <Th>
+                                                <Checkbox
+                                                    isChecked={selectedUsers.length === data.length}
+                                                    onChange={toggleAll}
+                                                />
+                                            </Th>
+                                            <Th>이름</Th>
+                                            <Th>전화번호</Th>
+                                        </Tr>
+                                    </Thead>
+                                    <Tbody>
+                                        {
+                                            data.map(user => (
+                                                <Tr key={user.id}>
+                                                    <Td>
+                                                        <Checkbox
+                                                            isChecked={selectedUsers.includes(user.phoneNumber)}
+                                                            onChange={() => toggleSelect(user.phoneNumber)}
+                                                        />
+                                                    </Td>
+                                                    <Td>{user.name}</Td>
+                                                    <Td>{user.phoneNumber}</Td>
+                                                </Tr>
+                                            ))
+                                        }
+                                    </Tbody>
+                                </Table>
+                            </TableContainer>
+                        )
+                    }
+                    <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"} mt={5}>
+                        <Button size={"sm"} colorScheme="blue" isDisabled={page === 1} isLoading={isLoading} onClick={() => setPage(prev => prev - 1)}>Prev</Button>
+                        <Text>{page} / {Math.ceil(total / size)}</Text>
+                        <Button size={"sm"} colorScheme="blue" isDisabled={page === Math.ceil(total / size)} isLoading={isLoading} onClick={() => setPage(prev => prev + 1)}>Next</Button>
+                    </Stack>
+                </ModalBody>
+                <ModalFooter gap={2}>
+                    <Button size={"sm"} colorScheme='blue' onClick={handleCreateInquiries} isLoading={isLoading} disabled={selectedUsers.length === 0}>
+                        보내기
+                    </Button>
+                    <Button size={"sm"} variant='outline' colorScheme="red" onClick={handleOnClose}>닫기</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
 
 function CreateInquiry({ setRefetch }: { setRefetch: Dispatch<SetStateAction<boolean>> }) {
     const toast = UseToastHooks()
+    const modal = useDisclosure()
+
     const [isLoading, setIsLoading] = useState(false);
     const [payload, setPayload] = useState({
         phoneNumber: "",
@@ -216,10 +428,14 @@ function CreateInquiry({ setRefetch }: { setRefetch: Dispatch<SetStateAction<boo
                 <Textarea value={payload.content} onChange={(e) => setPayload({ ...payload, content: e.target.value })} />
             </FormControl>
             <Stack w={"100%"} direction={"row"} justify={"flex-end"} align={"center"}>
-                <Button size={{ base: "md", md: "lg" }} colorScheme="blue" onClick={handleCreateInquiry} isLoading={isLoading}>
+                <UsersModal {...modal} setRefetch={setRefetch} resetPayload={handleResetPayload} {...payload} />
+                <Button colorScheme="green" onClick={modal.onOpen} isLoading={isLoading}>
+                    단체 메시지
+                </Button>
+                <Button colorScheme="blue" onClick={handleCreateInquiry} isLoading={isLoading}>
                     보내기
                 </Button>
-                <Button size={{ base: "md", md: "lg" }} colorScheme="red" onClick={handleResetPayload} isLoading={isLoading}>
+                <Button colorScheme="red" onClick={handleResetPayload} isLoading={isLoading}>
                     삭제
                 </Button>
             </Stack>
@@ -333,6 +549,7 @@ export default function DirectInquiry() {
             {
                 (selectedInquiry && typeRef.current === "delete") && <DeleteModal isOpen={modal.isOpen} onClose={handleCloseModal} inquiry={selectedInquiry} />
             }
+            <CreateInquiry setRefetch={setRefetch} />
             {
                 isLoading ? (
                     <Stack w={"100%"} p={10} justify={"center"} align={"center"} bgColor={"white"} rounded={"xl"}>
@@ -347,7 +564,7 @@ export default function DirectInquiry() {
                 ) : (
                     <>
                         <Box overflowX="auto" bg="white" rounded="xl" shadow="md">
-                            <Table >
+                            <Table size={"sm"}>
                                 <Thead bg="oklch(92.76% 0.0058 264.53)">
                                     <Tr>
                                         <Th py={2}>id</Th>
@@ -364,15 +581,15 @@ export default function DirectInquiry() {
                                             const created = new Date(inquiry.createdAt)
                                             return (
                                                 <Tr key={inquiry.id} cursor={"pointer"}>
-                                                    <Td>{inquiry.adminReplied ? "🟢" : "🔴"} {inquiry.id}</Td>
-                                                    <Td>{inquiry.miners.id}</Td>
-                                                    <Td>{inquiry.miners.name}</Td>
-                                                    <Td>{inquiry.title}</Td>
-                                                    <Td>{created.toDateString()}</Td>
-                                                    <Td>
+                                                    <Td py={2}>{inquiry.adminReplied ? "🟢" : "🔴"} {inquiry.id}</Td>
+                                                    <Td py={2}>{inquiry.miners.id}</Td>
+                                                    <Td py={2}>{inquiry.miners.name}</Td>
+                                                    <Td py={2}>{inquiry.title}</Td>
+                                                    <Td py={2}>{created.toDateString()}</Td>
+                                                    <Td py={2}>
                                                         <Stack w={"100%"} h={"full"} direction={"row"} align={"center"} justify={"flex-start"}>
-                                                            <Button colorScheme="blue" onClick={() => handleGetMessages("reply", inquiry)}>답장</Button>
-                                                            <Button colorScheme="red" onClick={() => handleGetMessages("delete", inquiry)}>삭제</Button>
+                                                            <Button size={"xs"} colorScheme="blue" onClick={() => handleGetMessages("reply", inquiry)}>답장</Button>
+                                                            <Button size={"xs"} colorScheme="red" onClick={() => handleGetMessages("delete", inquiry)}>삭제</Button>
                                                         </Stack>
                                                     </Td>
                                                 </Tr>
@@ -390,7 +607,6 @@ export default function DirectInquiry() {
                     </>
                 )
             }
-            <CreateInquiry setRefetch={setRefetch} />
         </Stack>
     );
 };

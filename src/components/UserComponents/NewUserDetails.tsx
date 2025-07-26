@@ -2,15 +2,17 @@ import React, { memo, useState, useEffect, Dispatch, SetStateAction } from "reac
 import {
     Box, Text, Stack, SimpleGrid, Divider, FormControl, FormLabel, Input, Button, Textarea, Heading, Spinner,
     Table, Thead, Tbody, Tfoot, Tr, Th, Td, TableCaption, TableContainer,
-    Modal, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, ModalOverlay,
+    Modal, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, ModalOverlay, Menu,
+    MenuButton, MenuList, MenuItem, MenuItemOption, MenuGroup, MenuOptionGroup, MenuDivider,
     Tabs, TabList, TabPanels, Tab, TabPanel,
     useDisclosure
 } from "@chakra-ui/react";
+import { ChevronDownIcon } from "@chakra-ui/icons";
 import { useUserStore } from "@/utils/storage";
 import UseToastHooks from "@/hooks/UseToastHooks";
 
 import { api } from "@/utils/api";
-import { CoinLog, RecoverCoinLog } from "@/utils/interface";
+import { CoinLog, RecoverCoinLog, Miners } from "@/utils/interface";
 import { useRouter } from "next/router";
 
 interface CoinLogsTableProps {
@@ -187,6 +189,68 @@ const ConfirmDeleteUserModal = ({ isOpen, onClose }: BaseModalProps) => {
                         적용
                     </Button>
                     <Button variant={"ghost"} colorScheme="red" onClick={onClose} isLoading={isLoading}>닫기</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}
+const MessageUserModal = ({ isOpen, onClose }: BaseModalProps) => {
+    const { user } = useUserStore()
+    if (!user) return null
+
+    const { warning, success, error } = UseToastHooks()
+    const [payload, setPayload] = useState({
+        title: "",
+        content: ""
+    });
+
+    const handleSendMessage = async () => {
+        if (payload.title.trim() === "" || payload.content.trim() === "") {
+            warning("제목과 내용을 입력해주세요")
+            return;
+        }
+        try {
+            const { message } = await api.createInquiry({ phoneNumber: user.phoneNumber, ...payload })
+            success(message)
+            handleOnClose()
+        } catch (e: any) {
+            const message = e?.response?.data?.message || "Something went wrong"
+            error(message)
+        } finally {
+            handleOnClose()
+        }
+    }
+
+    const handleOnClose = () => {
+        setPayload({
+            title: "",
+            content: ""
+        })
+        onClose()
+    }
+    return (
+        <Modal isOpen={isOpen} onClose={handleOnClose} scrollBehavior="inside">
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>{user.name}</ModalHeader>
+                <ModalBody>
+                    <Stack w={"100%"}>
+                        <FormControl>
+                            <FormLabel>제목</FormLabel>
+                            <Input value={payload.title} onChange={(e) => setPayload({ ...payload, title: e.target.value })} />
+                        </FormControl>
+                        <FormControl>
+                            <FormLabel>내용</FormLabel>
+                            <Textarea value={payload.content} onChange={(e) => setPayload({ ...payload, content: e.target.value })} />
+                        </FormControl>
+                    </Stack>
+                </ModalBody>
+
+                <ModalFooter gap={3}>
+                    <Button colorScheme="green" onClick={handleSendMessage}>
+                        보내기
+                    </Button>
+                    <Button variant={"ghost"} colorScheme="red" onClick={handleOnClose}>닫기</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -382,11 +446,13 @@ function NewUserDetails() {
     const { user } = useUserStore()
     if (!user) return null
 
+    const size = 25;
+
     const toast = UseToastHooks()
     const modal = useDisclosure()
     const recover = useDisclosure()
     const deleteModal = useDisclosure()
-    const size = 25;
+    const message = useDisclosure()
 
     const [tab, setTab] = useState(0);
     const [hashrate, setHashrate] = useState(0);
@@ -401,7 +467,6 @@ function NewUserDetails() {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoading2, setIsLoading2] = useState(false);
     const [isLoading3, setIsLoading3] = useState(false);
-    const [isLoading4, setIsLoading4] = useState(false);
     const [isLoading5, setIsLoading5] = useState(false);
 
     useEffect(() => {
@@ -533,12 +598,19 @@ function NewUserDetails() {
         <Stack w="full" p={6} spacing={6} bg="oklch(96.7% 0.0029 264.54)">
             <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"}>
                 <Text fontSize="2xl" fontWeight="bold">🧍 회원 상세정보</Text>
-                <Stack direction={"row"} justify={"center"} align={"center"}>
-                    <Button colorScheme="blue" onClick={modal.onOpen}>비밀번호 변경</Button>
-                    <Button colorScheme="red" onClick={deleteModal.onOpen}>사용자 삭제</Button>
-                </Stack>
+                <Menu>
+                    <MenuButton as={Button} colorScheme="blue" rightIcon={<ChevronDownIcon />}>
+                        작업 선택
+                    </MenuButton>
+                    <MenuList w={"fit-content"}>
+                        <MenuItem onClick={modal.onOpen}>비밀번호 변경</MenuItem>
+                        <MenuItem onClick={deleteModal.onOpen}>사용자 삭제</MenuItem>
+                        <MenuItem onClick={message.onOpen}>1:1 문의</MenuItem>
+                    </MenuList>
+                </Menu>
                 <UpdatePasswordModal {...modal} />
                 <ConfirmDeleteUserModal {...deleteModal} />
+                <MessageUserModal {...message} />
             </Stack>
 
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>

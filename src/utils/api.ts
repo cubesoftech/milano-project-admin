@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useTokenStore } from "./storage";
 import { CoinLog, Inquiries, Message, Miners, RecoverCoinLog } from "./interface";
-import { Log } from "@/components/Deposit";
+import { Log as TransactionLog } from "@/components/Deposit";
 const apiUrl = 'https://server.j-block.io/admin'
 
 let axiosInstance = axios.create({
@@ -44,7 +44,7 @@ class API {
             throw err;
         }
     };
-    miners = async (params: { page?: string, search?: string }) => {
+    miners = async (params: { page?: string, search?: string, limit?: string }) => {
         try {
             const { data } = await axiosInstance.get<{ success: boolean, data: Miners[], pagination: { total: number, page: number, limit: number }, message: string }>('/miners', {
                 params
@@ -106,9 +106,9 @@ class API {
             throw err
         }
     }
-    depositLog = async (params: { page?: string, search?: string }) => {
+    depositLog = async (params: { page?: string, search?: string, limit?: string }) => {
         try {
-            const { data } = await axiosInstance.get<{ success: boolean, data: Log[], pagination: { total: number, page: number, limit: number }, message: string }>('/deposit-log', {
+            const { data } = await axiosInstance.get<{ success: boolean, data: TransactionLog[], pagination: { total: number, page: number, limit: number }, message: string }>('/deposit-log', {
                 params
             })
             return data
@@ -116,9 +116,27 @@ class API {
             throw err
         }
     };
-    approveDeposit = async (payload: { depositId: number, status: Log["status"] }) => {
+    approveDeposit = async (payload: { depositId: number, status: TransactionLog["status"] }) => {
         try {
             const { data } = await axiosInstance.post('/approve-deposit', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
+    withdrawalLog = async (params: { page?: string, search?: string, limit?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: TransactionLog[], pagination: { total: number, page: number, limit: number }, message: string }>('/withdrawal-log', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
+    approveWithdrawal = async (payload: { withdrawalId: number, status: TransactionLog["status"] }) => {
+        try {
+            const { data } = await axiosInstance.post('/approve-withdrawal', payload)
             return data
         } catch (err) {
             throw err
@@ -249,6 +267,14 @@ class API {
             const { data } = await axiosInstance.get<{ success: boolean, data: Miners[], pagination: { total: number, page: number, limit: number }, message: string }>('/referrer', {
                 params
             })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
+    createBulkMessage = async (payload: { phoneNumbers: string[], title: string, content: string }) => {
+        try {
+            const { data } = await axiosInstance.post<{ success: boolean, message: string }>('/create-bulk-message', payload)
             return data
         } catch (err) {
             throw err

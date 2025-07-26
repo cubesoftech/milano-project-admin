@@ -19,6 +19,7 @@ export interface Log {
     phoneNumberMiner: string;
     amount: number;
     coin: string;
+    type?: string;
     status: LogStatus;
     createdAt: string;
     updatedAt: string;
@@ -76,6 +77,11 @@ function TableRow({ miner, type, mutate }: { miner: Log, type: TransactionType, 
             <Td>{miner.phoneNumberMiner}</Td>
             <Td>{miner.miners.name}</Td>
             <Td>{miner.coin}</Td>
+            {
+                type === "deposit" && (
+                    <Td>{miner.type}</Td>
+                )
+            }
             <Td>{miner.amount}</Td>
             <Td>
                 <Select defaultValue={miner.status} onChange={(e) => setStatus(e.target.value as LogStatus)} isDisabled={miner.status !== "PENDING"}>
@@ -268,6 +274,11 @@ export default function Deposit({ }: { type: "deposit" | "withdraw" }) {
                                     <Th py={3}>전화번호</Th>
                                     <Th py={3}>소속</Th>
                                     <Th py={3}>코인</Th>
+                                    {
+                                        type === "deposit" && (
+                                            <Th py={3}>type</Th>
+                                        )
+                                    }
                                     <Th py={3}>수량</Th>
                                     <Th py={3}>상태</Th>
                                     <Th py={3}>생성일</Th>

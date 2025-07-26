@@ -245,8 +245,8 @@ export default function Deposit({ }: { type: "deposit" | "withdraw" }) {
                 </Button>
             </Stack>
             <Stack direction={"row"}>
-                <Button colorScheme="blue" variant={type === "deposit" ? "solid" : "outline"} onClick={() => setType("deposit")}>출금 요청</Button>
-                <Button colorScheme="blue" variant={type === "withdrawal" ? "solid" : "outline"} onClick={() => setType("withdrawal")}>입금 요청</Button>
+                <Button colorScheme="blue" variant={type === "deposit" ? "solid" : "outline"} onClick={() => setType("deposit")}>입금 요청</Button>
+                <Button colorScheme="blue" variant={type === "withdrawal" ? "solid" : "outline"} onClick={() => setType("withdrawal")}>출금 요청</Button>
             </Stack>
             {/* Table */}
             {

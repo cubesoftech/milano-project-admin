@@ -588,7 +588,7 @@ export default function DirectInquiry() {
                                                     <Td py={2}>{inquiry.miners.id}</Td>
                                                     <Td py={2}>{inquiry.miners.name}</Td>
                                                     <Td py={2}>{inquiry.title}</Td>
-                                                    <Td py={2}>{created.toDateString()}</Td>
+                                                    <Td py={2}>{created.toDateString()} {created.toLocaleTimeString()}</Td>
                                                     <Td py={2}>
                                                         <Stack w={"100%"} h={"full"} direction={"row"} align={"center"} justify={"flex-start"}>
                                                             <Button size={"xs"} colorScheme="blue" onClick={() => handleGetMessages("reply", inquiry)}>답장</Button>

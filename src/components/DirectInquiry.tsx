@@ -117,16 +117,19 @@ const MessageModal = ({ isOpen, onClose, inquiry, messages, setMessage }: Messag
                                             w={"100%"} direction={"row"} align={"center"}
                                             justify={isFromUser ? "flex-start" : "flex-end"}
                                         >
-                                            <Text
-                                                maxW={"70%"} borderRadius={borderRadius} p={p} fontSize={"small"}
-                                                bgColor={isFromUser ? "gray.400" : "blue.400"}
-                                                borderBottomLeftRadius={isFromUser ? 0 : borderRadius}
-                                                borderBottomRightRadius={isFromUser ? borderRadius : 0}
-                                                pr={isFromUser ? 5 : p}
-                                                pl={isFromUser ? p : 5}
-                                            >
-                                                {message.content}
-                                            </Text>
+                                            <Stack maxW={"70%"} align={isFromUser ? "flex-start" : "flex-end"} gap={0}>
+                                                <Text fontSize={"x-small"}>{new Date(message.createdAt).toLocaleDateString()} {new Date(message.createdAt).toLocaleTimeString()}</Text>
+                                                <Text
+                                                    maxW={"100%"} borderRadius={borderRadius} p={p} fontSize={"small"}
+                                                    bgColor={isFromUser ? "gray.400" : "blue.400"}
+                                                    borderBottomLeftRadius={isFromUser ? 0 : borderRadius}
+                                                    borderBottomRightRadius={isFromUser ? borderRadius : 0}
+                                                    pr={isFromUser ? 5 : p}
+                                                    pl={isFromUser ? p : 5}
+                                                >
+                                                    {message.content}
+                                                </Text>
+                                            </Stack>
                                         </Stack>
                                     );
                                 })

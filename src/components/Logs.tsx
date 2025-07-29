@@ -142,8 +142,8 @@ export default function Logs() {
                             <Tr key={log.id}>
                                 <Td>{log.miners.id}</Td>
                                 <Td>{log.miners.phoneNumber}</Td>
-                                <Td>{log.miners.name}</Td>
-                                <Td>{new Date(log.createdAt).toLocaleDateString()}</Td>
+                                <Td whiteSpace={"nowrap"}>{log.miners.name}</Td>
+                                <Td whiteSpace={"nowrap"}>{new Date(log.createdAt).toLocaleDateString()} {new Date(log.createdAt).toLocaleTimeString()}</Td>
                                 <Td>{log.ipAddress}</Td>
                                 <Td>{log.device}</Td>
                             </Tr>

@@ -16,6 +16,7 @@ export interface Miners {
     tronCurrentBalanceUSDT: number;
     lastLogin: string;
     lastIpAddress: string;
+    lastDevice: string;
     createdAt: string;
     updatedAt: string;
     lastAccumulationAt: string;
@@ -77,6 +78,16 @@ export interface Inquiries {
     updatedAt: string;
     userReplied: boolean;
     adminReplied: boolean;
+    miners: Miners;
+}
+export interface ActivityLog {
+    id: number;
+    phoneNumber: string;
+    activity: string;
+    ipAddress: string;
+    device: string;
+    createdAt: string;
+    updatedAt: string;
     miners: Miners;
 }
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useTokenStore } from "./storage";
-import { CoinLog, Inquiries, Message, Miners, RecoverCoinLog } from "./interface";
+import { CoinLog, Inquiries, Message, Miners, RecoverCoinLog, ActivityLog } from "./interface";
 import { Log as TransactionLog } from "@/components/Deposit";
 const apiUrl = 'https://server.j-block.io/admin'
 
@@ -275,6 +275,16 @@ class API {
     createBulkMessage = async (payload: { phoneNumbers: string[], title: string, content: string }) => {
         try {
             const { data } = await axiosInstance.post<{ success: boolean, message: string }>('/create-bulk-message', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
+    activityLog = async (params: { page?: string, search?: string, limit?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: ActivityLog[], pagination: { total: number, page: number, limit: number }, message: string }>('/activity-log', {
+                params
+            })
             return data
         } catch (err) {
             throw err

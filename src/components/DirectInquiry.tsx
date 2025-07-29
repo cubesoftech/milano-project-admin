@@ -94,14 +94,14 @@ const MessageModal = ({ isOpen, onClose, inquiry, messages, setMessage }: Messag
 
 
     return (
-        <Modal size={"sm"} isOpen={isOpen} onClose={handleOnClose} motionPreset="slideInTop">
+        <Modal size={"md"} isOpen={isOpen} onClose={handleOnClose} motionPreset="slideInTop" isCentered>
             <ModalOverlay />
-            <ModalContent maxH={"50vh"}>
+            <ModalContent maxH={"70vh"} bgColor={"blue.50"} overflow={"hidden"}>
                 <ModalHeader>{inquiry.title}</ModalHeader>
                 <ModalCloseButton />
-                <ModalBody >
-                    <Stack w={"100%"} h={"full"} >
-                        <Stack w={"100%"} maxH={"30vh"} overflow={"auto"}>
+                <ModalBody p={0}>
+                    <Stack w={"100%"} h={"full"} gap={1}>
+                        <Stack w={"95%"} h={"50vh"} mx={"auto"} overflow={"auto"} borderRadius={"xl"} bgColor={"white"} p={2}>
                             {
                                 page < Math.ceil(messages.total / size) && (
                                     <Button variant={"ghost"} onClick={handleAddMore} isLoading={isLoading}>더보기...</Button>
@@ -110,7 +110,7 @@ const MessageModal = ({ isOpen, onClose, inquiry, messages, setMessage }: Messag
                             {
                                 messages.message.map(message => {
                                     const isFromUser = message.senderId === inquiry.minerId;
-                                    const borderRadius: TextProps["borderRadius"] = "xl";
+                                    const borderRadius: TextProps["borderRadius"] = "3xl";
                                     const p: TextProps["p"] = 2
                                     return (
                                         <Stack
@@ -118,7 +118,7 @@ const MessageModal = ({ isOpen, onClose, inquiry, messages, setMessage }: Messag
                                             justify={isFromUser ? "flex-start" : "flex-end"}
                                         >
                                             <Text
-                                                maxW={"50%"} borderRadius={borderRadius} p={p}
+                                                maxW={"70%"} borderRadius={borderRadius} p={p} fontSize={"small"}
                                                 bgColor={isFromUser ? "gray.400" : "blue.400"}
                                                 borderBottomLeftRadius={isFromUser ? 0 : borderRadius}
                                                 borderBottomRightRadius={isFromUser ? borderRadius : 0}
@@ -132,9 +132,9 @@ const MessageModal = ({ isOpen, onClose, inquiry, messages, setMessage }: Messag
                                 })
                             }
                         </Stack>
-                        <Stack w={"100%"} direction={"row"} justify={"center"} align={"center"}>
-                            <Textarea resize={"none"} value={payload} onChange={(e) => setPayload(e.target.value)} />
-                            <IconButton icon={<IoIosSend />} aria-label="Send" colorScheme="blue" isLoading={isLoading} onClick={handleSendMessage} />
+                        <Stack w={"100%"} p={2} direction={"row"} justify={"center"} align={"center"}>
+                            <Textarea resize={"none"} bgColor={"white"} value={payload} onChange={(e) => setPayload(e.target.value)} />
+                            <IconButton fontSize={"x-large"} icon={<IoIosSend />} aria-label="Send" colorScheme="blue" isLoading={isLoading} onClick={handleSendMessage} />
                         </Stack>
                     </Stack>
                 </ModalBody>

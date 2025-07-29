@@ -621,7 +621,7 @@ function NewUserDetails() {
                     <Text><strong>이메일:</strong> 준비중입니다</Text>
                     <Text><strong>전화번호:</strong> {user.phoneNumber}</Text>
                     <Text><strong>상태:</strong> 준비중입니다</Text>
-                    <Text><strong>가입일:</strong>{new Date(user.createdAt).toDateString()}</Text>
+                    <Text><strong>가입일:</strong> {new Date(user.createdAt).toDateString()}</Text>
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm">

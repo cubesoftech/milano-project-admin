@@ -134,9 +134,27 @@ class API {
             throw err
         }
     };
+    walletWithdrawalLog = async (params: { page?: string, search?: string, limit?: string }) => {
+        try {
+            const { data } = await axiosInstance.get<{ success: boolean, data: TransactionLog[], pagination: { total: number, page: number, limit: number }, message: string }>('/wallet-withdrawal-log', {
+                params
+            })
+            return data
+        } catch (err) {
+            throw err
+        }
+    };
     approveWithdrawal = async (payload: { withdrawalId: number, status: TransactionLog["status"] }) => {
         try {
             const { data } = await axiosInstance.post('/approve-withdrawal', payload)
+            return data
+        } catch (err) {
+            throw err
+        }
+    }
+    approveWalletWithdrawal = async (payload: { withdrawalId: number, status: TransactionLog["status"] }) => {
+        try {
+            const { data } = await axiosInstance.post('/approve-wallet-withdrawal', payload)
             return data
         } catch (err) {
             throw err

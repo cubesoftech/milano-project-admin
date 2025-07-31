@@ -38,7 +38,7 @@ interface GetResult {
 }
 
 type GetRequest = (params: { page?: string; search?: string; limit?: string; }) => Promise<GetResult>
-type TransactionType = "deposit" | "withdrawal";
+type TransactionType = "deposit" | "withdrawal" | "walletWithdrawal";
 
 function TableRow({ miner, type, mutate }: { miner: Log, type: TransactionType, mutate: KeyedMutator<any> }) {
 
@@ -61,6 +61,9 @@ function TableRow({ miner, type, mutate }: { miner: Log, type: TransactionType, 
             }
             if (type === "withdrawal") {
                 await api.approveWithdrawal({ withdrawalId: miner.id, status });
+            }
+            if (type === "walletWithdrawal") {
+                await api.approveWalletWithdrawal({ withdrawalId: miner.id, status });
             }
             mutate()
             success("Status updated")
@@ -119,7 +122,8 @@ export default function Deposit({ }: { type: "deposit" | "withdraw" }) {
 
     const RequestType: Record<TransactionType, GetRequest> = {
         deposit: api.depositLog,
-        withdrawal: api.withdrawalLog
+        withdrawal: api.withdrawalLog,
+        walletWithdrawal: api.walletWithdrawalLog
     }
 
     const { mutate } = useSWR(
@@ -253,6 +257,7 @@ export default function Deposit({ }: { type: "deposit" | "withdraw" }) {
             <Stack direction={"row"}>
                 <Button colorScheme="blue" variant={type === "deposit" ? "solid" : "outline"} onClick={() => setType("deposit")}>입금 요청</Button>
                 <Button colorScheme="blue" variant={type === "withdrawal" ? "solid" : "outline"} onClick={() => setType("withdrawal")}>출금 요청</Button>
+                <Button colorScheme="red" variant={type === "walletWithdrawal" ? "solid" : "outline"} onClick={() => setType("walletWithdrawal")}>자율형수익출금로그</Button>
             </Stack>
             {/* Table */}
             {

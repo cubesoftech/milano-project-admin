@@ -296,39 +296,6 @@ const CoinLogsTable = ({ coinLog, isLoading, page, size, total, setPage }: CoinL
                     {
                         coinLog.map(log => {
                             const createdUTC = new Date(log.createdAt)
-                            const seoulOffset = 9 * 60 * 60 * 1000; // +9 hours in ms
-                            const seoulTime = new Date(createdUTC.getTime() + seoulOffset);
-
-                            if (seoulTime.getHours() < 5) {
-                                seoulTime.setDate(seoulTime.getDate() - 1);
-                            }
-
-                            const displayDate = seoulTime.toLocaleDateString('ko-KR', {
-                                timeZone: 'UTC',
-                                year: 'numeric',
-                                month: 'numeric',
-                                day: 'numeric',
-                            });
-
-                            const displayTime = seoulTime.toLocaleTimeString('ko-KR', {
-                                timeZone: 'UTC',
-                                hour: 'numeric',
-                                minute: 'numeric',
-                                hour12: true,
-                            });
-
-                            const display = seoulTime.toLocaleString('ko-KR', {
-                                timeZone: 'UTC',
-                                year: 'numeric',
-                                month: 'numeric',
-                                day: 'numeric',
-                                // hour: 'numeric',
-                                // minute: 'numeric',
-                                // hour12: true,
-                            });
-
-                            const split = log.createdAt.split('T')
-
                             return (
                                 <Tr key={log.id}>
                                     <Td>{log.id}</Td>
@@ -594,6 +561,15 @@ function NewUserDetails() {
         }
     }
 
+    const now = new Date()
+    const midnight = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        0, 0, 0
+    ))
+    const hoursPassed = Math.floor((now.getTime() - midnight.getTime()) / (1000 * 60 * 60));
+
     return (
         <Stack w="full" p={6} spacing={6} bg="oklch(96.7% 0.0029 264.54)">
             <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"}>
@@ -668,7 +644,9 @@ function NewUserDetails() {
                         <RecoverCoinModal {...recover} />
                     </Stack>
                     <Text><strong>누적 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.totalEarnings : 0).toLocaleString()} USDT</Text>
-                    <Text><strong>금일 예상 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text>
+                    {/* <Text><strong>금일 예상 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text> */}
+                    {/* check the hours passed since 12mn in utc time */}
+                    <Text><strong>금일 예상 수익:</strong> ₩{hoursPassed} {new Date().toUTCString()}USDT</Text>
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm" h={"fit-content"}>

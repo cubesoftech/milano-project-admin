@@ -644,9 +644,9 @@ function NewUserDetails() {
                         <RecoverCoinModal {...recover} />
                     </Stack>
                     <Text><strong>누적 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.totalEarnings : 0).toLocaleString()} USDT</Text>
-                    {/* <Text><strong>금일 예상 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text> */}
+                    <Text><strong>금일 예상 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text>
                     {/* check the hours passed since 12mn in utc time */}
-                    <Text><strong>금일 예상 수익:</strong> ₩{hoursPassed} {new Date().toUTCString()}USDT</Text>
+                    {/* <Text><strong>금일 예상 수익:</strong> ₩{hoursPassed} {new Date().toUTCString()}USDT</Text> */}
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm" h={"fit-content"}>

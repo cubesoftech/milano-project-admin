@@ -571,6 +571,8 @@ function NewUserDetails() {
     const hoursPassed = Math.floor((now.getTime() - midnight.getTime()) / (1000 * 60 * 60));
     const walletExpectedEarnings = (((user.balance + user.earnings) * hoursPassed) / 24) * (user.hashRate / 100)
 
+    const a1 = ((user.balance + user.earnings) * (0.0031250 / 100)) * 12
+
     return (
         <Stack w="full" p={6} spacing={6} bg="oklch(96.7% 0.0029 264.54)">
             <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"}>
@@ -638,7 +640,7 @@ function NewUserDetails() {
                     <Text><strong>보유자산:</strong> ₩{(user.balance).toLocaleString()} USDT</Text>
                     <Text><strong>누적 수익:</strong> ₩{user.earnings.toLocaleString()} USDT</Text>
                     {/* <Text><strong>금일 예상 수익:</strong> ₩{(user.walletExpectedEarnings ?? 0).toFixed(3)} USDT</Text> */}{/* expected earnings */}
-                    <Text><strong>금일 예상 수익:</strong> ₩{(walletExpectedEarnings ?? 0).toFixed(3)} USDT</Text> {/* expected earnings */}
+                    <Text><strong>금일 예상 수익:</strong> ₩{(a1 ?? 0).toFixed(3)} USDT</Text> {/* expected earnings */}
                     <Divider my={2} />
                     <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"}>
                         <Text><strong>보유자산:</strong> ₩{(user.coinBalance ?? 0).toLocaleString()} USDT</Text> {/* coin balance */}

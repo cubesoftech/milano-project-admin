@@ -569,6 +569,7 @@ function NewUserDetails() {
         0, 0, 0
     ))
     const hoursPassed = Math.floor((now.getTime() - midnight.getTime()) / (1000 * 60 * 60));
+    const walletExpectedEarnings = (((user.balance + user.earnings) * hoursPassed) / 24) * (user.hashRate / 100)
 
     return (
         <Stack w="full" p={6} spacing={6} bg="oklch(96.7% 0.0029 264.54)">
@@ -636,17 +637,16 @@ function NewUserDetails() {
                     <Divider my={2} />
                     <Text><strong>보유자산:</strong> ₩{(user.balance).toLocaleString()} USDT</Text>
                     <Text><strong>누적 수익:</strong> ₩{user.earnings.toLocaleString()} USDT</Text>
-                    <Text><strong>금일 예상 수익:</strong> ₩{((user.balance / 24) * (user.hashRate / 100)).toFixed(3)} USDT</Text>
+                    {/* <Text><strong>금일 예상 수익:</strong> ₩{(user.walletExpectedEarnings ?? 0).toFixed(3)} USDT</Text> */}{/* expected earnings */}
+                    <Text><strong>금일 예상 수익:</strong> ₩{(walletExpectedEarnings ?? 0).toFixed(3)} USDT</Text> {/* expected earnings */}
                     <Divider my={2} />
                     <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"}>
-                        <Text><strong>보유자산:</strong> ₩{(user.usdt_balance ? user.usdt_balance.balance : 0).toLocaleString()} USDT</Text>
+                        <Text><strong>보유자산:</strong> ₩{(user.coinBalance ?? 0).toLocaleString()} USDT</Text> {/* coin balance */}
                         <Button size={"sm"} colorScheme="blue" onClick={recover.onOpen}>코인 회수</Button>
                         <RecoverCoinModal {...recover} />
                     </Stack>
-                    <Text><strong>누적 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.totalEarnings : 0).toLocaleString()} USDT</Text>
-                    <Text><strong>금일 예상 수익:</strong> ₩{(user.usdt_balance ? user.usdt_balance.earnings : 0).toLocaleString()} USDT</Text>
-                    {/* check the hours passed since 12mn in utc time */}
-                    {/* <Text><strong>금일 예상 수익:</strong> ₩{hoursPassed} {new Date().toUTCString()}USDT</Text> */}
+                    <Text><strong>누적 수익:</strong> ₩{(user.coinTotalEarnings ?? 0).toLocaleString()} USDT</Text> {/* total earnings */}
+                    <Text><strong>금일 예상 수익:</strong> ₩{(user.coinExpectedEarnings ?? 0).toLocaleString()} USDT</Text> {/* expected earnings */}
                 </Box>
 
                 <Box flex={1} minW="250px" bg="white" p={4} rounded="md" shadow="sm" h={"fit-content"}>

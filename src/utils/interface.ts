@@ -34,6 +34,10 @@ export interface Miners {
     usdt_balance: CoinBalance;
     earnings: number;
     note: string;
+    walletExpectedEarnings?: number;
+    coinBalance?: number;
+    coinTotalEarnings?: number;
+    coinExpectedEarnings?: number;
     referredUsers?: Miners[]
 }
 

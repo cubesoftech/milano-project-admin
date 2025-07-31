@@ -640,7 +640,7 @@ function NewUserDetails() {
                     <Text><strong>보유자산:</strong> ₩{(user.balance).toLocaleString()} USDT</Text>
                     <Text><strong>누적 수익:</strong> ₩{user.earnings.toLocaleString()} USDT</Text>
                     {/* <Text><strong>금일 예상 수익:</strong> ₩{(user.walletExpectedEarnings ?? 0).toFixed(3)} USDT</Text> */}{/* expected earnings */}
-                    <Text><strong>금일 예상 수익:</strong> ₩{(a1 ?? 0).toFixed(3)} USDT</Text> {/* expected earnings */}
+                    <Text><strong>시간당 예상 수익:</strong> ₩{(a1 ?? 0).toFixed(3)} USDT</Text> {/* expected earnings */}
                     <Divider my={2} />
                     <Stack w={"100%"} direction={"row"} justify={"space-between"} align={"center"}>
                         <Text><strong>보유자산:</strong> ₩{(user.coinBalance ?? 0).toLocaleString()} USDT</Text> {/* coin balance */}

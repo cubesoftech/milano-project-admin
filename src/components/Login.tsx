@@ -2,7 +2,7 @@
 import React, { useState, ChangeEvent } from "react";
 import { Stack, Image, FormControl, Input, Button, useColorModeValue, } from "@chakra-ui/react";
 
-import logo from "@/assets/logo.png"
+import logo from "@/assets/milano_logo-nobg.png"
 
 import UseToastHooks from "@/hooks/UseToastHooks";
 
@@ -52,7 +52,7 @@ export default function Login() {
     };
 
     return (
-        <Stack w={"100%"} h={"100vh"} justify={"center"} align={"center"}>
+        <Stack w={"100%"} h={"100vh"} justify={"center"} align={"center"} bgColor={"blue.900"}>
             <Stack
                 as="section"
                 w="full"
@@ -61,7 +61,7 @@ export default function Login() {
                 spacing={6}
                 rounded="lg"
                 shadow="2xl"
-                bg={useColorModeValue('white', 'gray.700')}
+                bg={useColorModeValue('blue.800', 'gray.700')}
                 align="center"
             >
                 <Image src={logo.src} alt="Logo" w="auto" h="20" />
@@ -69,6 +69,7 @@ export default function Login() {
                 <Stack as="form" w="full" spacing={4}>
                     <FormControl>
                         <Input
+                            color={"white"}
                             variant="outline"
                             placeholder="Username"
                             name="email"
@@ -80,6 +81,7 @@ export default function Login() {
 
                     <FormControl>
                         <Input
+                            color={"white"}
                             variant="outline"
                             type="password"
                             placeholder="Password"

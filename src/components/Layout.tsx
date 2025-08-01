@@ -7,6 +7,9 @@ import { Pages } from "@/utils/interface";
 import { useTitleStore, usePageStore, useUserStore, useAgencyStore, useTokenStore } from "@/utils/storage";
 import { useSession, signOut } from "next-auth/react";
 
+import Image from "next/image";
+import logo from "@/assets/milano_logo-nobg.png"
+
 import Login from "./Login";
 
 function Sidebar() {
@@ -43,7 +46,8 @@ function Sidebar() {
 
     return (
         <Stack w={"auto%"} h={"full"} color={"white"} bgColor={"oklch(21% 0.034 264.665)"} align={"center"} justify={"flex-start"} p={5}>
-            <Heading color={"oklch(78.9% 0.154 211.53)"}>J BLOCK</Heading>
+            {/* <Heading color={"oklch(78.9% 0.154 211.53)"}>MILANO-PROJECT</Heading> */}
+            <Image src={logo} alt="Logo" height={50} />
             <Divider />
             <Stack w={"100%"} align={"flex-start"}>
                 {

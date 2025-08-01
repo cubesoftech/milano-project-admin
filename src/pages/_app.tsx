@@ -17,7 +17,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <ChakraProvider>
       <Layout>
         <Head>
-          <title>BLOCK 관리자</title>
+          <title>MILANO-PROJECT</title>
           <meta name="description" content="Created by Cubesoft OPC" />
         </Head>
         {

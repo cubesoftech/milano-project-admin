@@ -2,7 +2,7 @@ import axios from "axios";
 import { useTokenStore } from "./storage";
 import { CoinLog, Inquiries, Message, Miners, RecoverCoinLog, ActivityLog } from "./interface";
 import { Log as TransactionLog } from "@/components/Deposit";
-const apiUrl = 'https://server.j-block.io/admin'
+const apiUrl = 'https://server.milano-project.com/admin'
 
 let axiosInstance = axios.create({
     baseURL: apiUrl,

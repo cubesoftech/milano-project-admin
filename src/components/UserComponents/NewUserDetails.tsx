@@ -607,9 +607,6 @@ function NewUserDetails() {
                     <Text fontWeight="semibold" mb={2}>지갑 정보</Text>
                     <Text><strong>출금 가능 잔액:</strong> {user.cumulativeBalance}</Text>
                     <Divider my={2} />
-                    <Text><strong>ETH 주소:</strong> {user.ethAddress}</Text>
-                    <Text><strong>erc20 잔액:</strong> {user.ethbalance.toLocaleString()}</Text>
-                    <Divider my={2} />
                     <Text><strong>TRON 주소:</strong> {user.tronAddress}</Text>
                     <Text><strong>trc20 잔액:</strong> {user.tronBalance.toLocaleString()}</Text>
                 </Box>
